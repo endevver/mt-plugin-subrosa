@@ -1,5 +1,4 @@
 <?php
-
 //kill_php_current_session();
 // show_current_request_info();
 
@@ -10,9 +9,22 @@ session_start();
 $subrosa_config = subrosa_config();
 $MTDir          = $subrosa_config['mt_dir'];
 $subrosa_path   = $subrosa_config['subrosa_path'];
+$request_path = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_URL'];
 $site_path      = $subrosa_config['site_path'];
+if ( empty($site_path) ) $site_path = $_SERVER['DOCUMENT_ROOT'];
 
-if (    isset($_REQUEST['redirect'])
+// Requests for directories and non-existent files are virtual and must be
+// run through SubRosa.
+$virtual_request = (   ! is_file( $request_path )
+                    or ! file_exists( $request_path ) ) ? 1 : 0;
+
+if ( $_SERVER['SUBROSA_PASSTHRU'] == 1 ) {
+
+    error_log($_SERVER['SCRIPT_URL'].': Inspect and passthrough');
+    include("$MTDir/$subrosa_path");
+    $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
+}
+elseif (    isset($_REQUEST['redirect'])
     and is_authorized(isset($_REQUEST['redirect']))) {
 
     error_log($_SERVER['SCRIPT_URL'].
@@ -20,28 +32,24 @@ if (    isset($_REQUEST['redirect'])
     include("$MTDir/$subrosa_path");
     $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
 
-    $mt->redirect($_REQUEST['redirect']);        
+    $mt->redirect($_REQUEST['redirect']);
     $mt->view();
     exit;
 }
-
-// Requests for directories and non-existent files are virtual and must be
-// run through SubRosa.
-$virtual_request = (! is_file($site_path.$_SERVER['SCRIPT_URL']) or
-                    ! file_exists($site_path.$_SERVER['SCRIPT_URL'])) ? 1 : 0;
-
-if ( ! $virtual_request ) {
-    if (unprotected_request() or is_authorized($_SERVER['SCRIPT_URL'])) {
+elseif ( ! $virtual_request ) {
+    if ( unprotected_request() or is_authorized( $_SERVER['SCRIPT_URL'] ) ) {
         error_log($_SERVER['SCRIPT_URL'].': Serving request');
-        serve_request();
-        exit;
+        apache_setenv( 'SUBROSA_OK', 1 );
+        virtual( $_SERVER['SCRIPT_URL'] );
+        // serve_request();
+        // exit;
     }
 }
-
-
-if ($virtual_request or isset($_POST['login']) or isset($_COOKIE['mt_user'])) {
+elseif (   $virtual_request
+        or isset($_POST['login'])
+        or isset($_COOKIE['mt_user']) ) {
     error_log($_SERVER['SCRIPT_URL'].
-        ': Have session information available in gateway script');
+        ': Have session information available in gateway script. Loading '."$MTDir/$subrosa_path");
     include("$MTDir/$subrosa_path");
     $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
 
@@ -87,7 +95,11 @@ function get_user_cookie() {
 }
 
 function is_authorized($url) {
+    // print "<p>Here in is_authorized</p>";
     list($cuser, $csid, $cpersist) = get_user_cookie();
+    // print "<p style='text-align: left'><pre style='text-align: left'>";
+    // print_r(Array(cuser => $cuser, csid => $csid, cpersist => $cpersist, SESSION => $_SESSION));
+    // print "</pre></p>";
     if ($cuser and $csid and $_SESSION['current_user']) {
         // print "<p>we have cookie and current session</p>";
         error_log('We have cookie and PHP session');
@@ -126,7 +138,7 @@ function is_page_request() {
 }
 
 
-serve_request();
+// serve_request();
 // info();
 // fileinfo();
 
@@ -138,9 +150,9 @@ function serve_request() {
     $ext = $path_parts['extension'];
     $mimetype = mimetype($ext);
     $fp = fopen($name, "r");
-    // // send the right headers
-error_log("Sending $name with mime type $mimetype");
-    header("Content-Type: ".$mimetype);
+    // send the right headers
+    error_log("Sending $name with mime type $mimetype");
+    if ( ! empty($mimetype) ) header("Content-Type: ".$mimetype);
     header("Content-Length: " . filesize($name));
 
     // dump the picture and stop the script
@@ -189,35 +201,28 @@ function reqinfo() {
     exit;
 }
 
-
-
-
-
-
-exit;
-
-function trac_cookie_test() {
-    
-    if ($_GET['traccookie']) {
-        $key = 'trac_auth';
-        $project = 'private';
-        $usercookie = str_replace(' ','+',$_COOKIE['mt_user']);
-        $val_nomd5 = "$project::$usercookie";
-        $val = md5('private::'.$_COOKIE['mt_user']);
-        $expire = 315360000;
-        $path = '/private';
-        $domain = '.extranet.tdi.local';
-
-        setcookie($key, $val, (time()+$expire), $path, $domain); 
-        print "<p>Just set cookie val $val</p>";
-        print "<p>No MD5: $val_nomd5</p>";
-        error_log("No MD5: $val_nomd5");
-        print "<p>MD5: $val</p>";
-        error_log("MD5: $val");
-        exit;
-    }
-    
-}
+// function trac_cookie_test() {
+//     
+//     if ($_GET['traccookie']) {
+//         $key = 'trac_auth';
+//         $project = 'private';
+//         $usercookie = str_replace(' ','+',$_COOKIE['mt_user']);
+//         $val_nomd5 = "$project::$usercookie";
+//         $val = md5('private::'.$_COOKIE['mt_user']);
+//         $expire = 315360000;
+//         $path = '/private';
+//         $domain = '.extranet.tdi.local';
+// 
+//         setcookie($key, $val, (time()+$expire), $path, $domain); 
+//         print "<p>Just set cookie val $val</p>";
+//         print "<p>No MD5: $val_nomd5</p>";
+//         error_log("No MD5: $val_nomd5");
+//         print "<p>MD5: $val</p>";
+//         error_log("MD5: $val");
+//         exit;
+//     }
+//     
+// }
 function print_table($array = null, $return_output = false) {
     if (empty($array)) return;
     foreach ($array as $key => $val) {
@@ -428,7 +433,7 @@ function subrosa_config() {
 }
 
 function kill_php_current_session() {
-    session_name('TDIExtranet');
+    session_name('SubRosa');
     session_start();
     unset($_SESSION['current_user']);
     print 'Your PHP session has been killt...';

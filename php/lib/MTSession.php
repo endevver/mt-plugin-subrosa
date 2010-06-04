@@ -88,7 +88,8 @@ class MTSession extends MTObject
         // Initialize serializer if it's needed
         if (!$mtdb->serializer) {
             require_once($mt->config['PHPLibDir'].'/MTSerialize.php');
-            $mtdb->serializer =& new MTSerialize();
+            $mtdb_serializer = new MTSerialize();
+            $mtdb->serializer =& $mtdb_serializer;
         }
 
         // Compile session row data, serializing the session_data field
