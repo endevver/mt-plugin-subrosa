@@ -1,0 +1,51 @@
+callbacks => {
+    'start_session' => {                
+        callback => 'MT::Session::post_save',
+        handler => '$SubRosa::SubRosa::Plugin::cb_start_session',
+    },
+    'end_session' => {                
+        callback => 'MT::Session::post_remove',
+        handler => '$SubRosa::SubRosa::Plugin::cb_end_session',
+    },
+    'end_sessions' => {                
+        callback => 'MT::Session::post_remove_all',
+        handler => '$SubRosa::SubRosa::Plugin::cb_end_session',
+    },
+},
+------------------------------------------------------------------------
+
+
+
+
+*mt_dir = \&server_path;
+sub server_path { $_[0]->{mt_dir} }
+sub app_dir { $_[0]->{app_dir} }
+sub config_dir { $_[0]->{config_dir} }
+
+
+mt_dir  = the root of the Movable Type installation, also known as the
+          "server_path" and is specified in the application bootstrap with the
+          Directory paramter to the constructor.
+
+app_dir = the root of the ``currently running application'', which might be
+          Movable Type or a plugin application.
+
+config_dir = The path to the MT configuration file.
+
+
+Under dynamic:
+
+    mtview handles this for each
+    
+    
+Things that have not happened yet when init_plugins is run:
+
+    $mtdb =& $this->db();
+    $ctx->mt->db =& $mtdb;
+
+    // Set up our customer error handler
+    set_error_handler(array(&$this, 'error_handler'));
+    
+    [path wrangling for $this->request for different webservers]
+
+    $data =& $this->resolve_url($path);

@@ -1,0 +1,146 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>SubRosa - Authenticated reading | Main Menu | SubRosa - Authenticated reading | Movable Type Enterprise</title>
+
+<link rel="stylesheet" href="/mte-static/styles.css?v=1.52" type="text/css" />
+<script type="text/javascript" src="/mte-static/js/tc.js?v=1.52"></script>
+<script type="text/javascript" src="/mte-static/js/tc/tableselect.js?v=1.52"></script>
+<script type="text/javascript" src="/mte-static/js/core.js?v=1.52"></script>
+<script type="text/javascript" src="/mte-static/mt.js?v=1.52"></script>
+
+<link rel="stylesheet" href="/mte-static/user_styles.css" type="text/css" />
+<style type="text/css">
+
+
+</style>
+<script type="text/javascript">
+
+CMSScriptURI = '/cgi/mt/mt.fcgi';
+ScriptURI = '/cgi/mt/mt.fcgi';
+ScriptBaseURI = '';
+StaticURI = '/mte-static/';
+HelpBaseURI = 'http://www.sixapart.com/movabletype/docs/enterprise/1.5/';
+
+</script>
+</head>
+
+<body id="mode_list" class="system">
+
+<div id="modal-mask" class="autolayout-height-parent modal-mask hidden">
+    <iframe frameborder="0" scrolling="no" src="about:blank"></iframe>
+    <div></div>
+</div>
+
+<div id="topnav">
+<div id="topnav-container">
+<div id="topnav-img"><h1><a href="/cgi/mt/mt.fcgi"><img alt="Movable Type" src="/mte-static/images/topnav-logo.gif" width="224" height="66" border="0" /></a></h1></div>
+
+
+
+</div>
+</div>
+
+<div class="body-wrap">
+
+
+
+<div class="body">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+<!--
+// if this loads within our modal dialog iframe, force the user to
+// login from the 'top' of the browser.
+if (window.top && (window.top.location != window.location)) {
+    // strip any parameters to return them to the main menu,
+    // since leaving them will display the modal dialog in the
+    // full window.
+    var loc = window.location.href;
+    loc = loc.replace(/\?.+/, '');
+    window.top.location.href = loc;
+}
+
+function init() {
+    var u = getByID("username");
+    if (u.value != '') {
+        var p = getByID("password");
+        p.focus();
+    } else {
+        u.focus();
+    }
+}
+TC.attachLoadEvent(init);
+//-->
+</script>
+
+<form method="post" action="<?php print $_SERVER['SCRIPT_URI'] ?>">
+
+<input type="hidden" name="__mode" value="list" />
+
+<input type="hidden" name="_type" value="template" />
+
+<input type="hidden" name="blog_id" value="13" />
+
+<input type="hidden" name="saved_deleted" value="1" />
+
+
+
+
+
+
+
+
+
+
+
+<p><label for="username">Username</label><br />
+<input name="username" id="username" size="20" /></p>
+
+<p><label for="password">Password</label><br />
+<input type="password" name="password" id="password" size="20" /></p>
+
+<p><label>Remember me? <input type="checkbox" name="remember" value="1" accesskey="r" /></label></p>
+
+
+<p><input type="submit" name="submit" value="Log In" /></p>
+
+
+
+<p><a href="#" onclick="window.open('/cgi/mt/mt.fcgi?__mode=start_recover', 'recover', 'width=370,height=250'); return false">Forgot your password?</a></p>
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+<div id="copyright">
+<b>Version 1.52</b> Copyright &copy; 2001-2007 Six Apart. All Rights Reserved.
+</div>
+
+<div id="dialog-container" style="display: none">
+<div class="modal-mask opaque"></div>
+<div id="dialog-inner"><iframe frameborder="0" scrolling="auto" src="about:blank" id="dialog-iframe" name="dialog_iframe"></iframe></div>
+</div>
+
+</body>
+</html>
+
+

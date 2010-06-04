@@ -1,0 +1,14 @@
+---
+id: 'subrosa'
+key: 'MT::Plugin::SubRosa'
+name: 'SubRosa'
+description: 'Authenticated reading of published blogs.'
+author_name: 'Jay Allen'
+author_link: 'http://endevver.com/'
+plugin_link: 'http://endevver.com/plugin'
+doc_link: 'http://endevver.com/plugin/docs'
+version: 2.0
+tags:
+  help_url: http://www.movabletype.org/documentation/appendices/tags/%t.html
+  function:
+    SubRosa: $SubRosa::SubRosa::Template::ContextHandlers::_hdlr_subrosa
