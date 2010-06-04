@@ -45,7 +45,8 @@ function unpack_session_data($sdata) {
     $mtdb =& $mt->db;
     if (!$mtdb->serializer) {
         require_once('MTSerialize.php');
-        $mtdb->serializer =& new MTSerialize();
+        $serializer = new MTSerialize();
+        $mtdb->serializer =& $serializer;
     }
     $session_data = $mtdb->unserialize($sdata);
     return $session_data;

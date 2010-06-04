@@ -1,6 +1,6 @@
 ---
 id: 'subrosa'
-key: 'MT::Plugin::SubRosa'
+key: 'SubRosa'
 name: 'SubRosa'
 description: 'Authenticated reading of published blogs.'
 author_name: 'Jay Allen'

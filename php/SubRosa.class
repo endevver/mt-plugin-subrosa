@@ -211,17 +211,17 @@ class MTSubRosa extends MT
         $this->init_viewer();
         $this->marker('Starting viewer');
 
-        $ctx =& $this->context();
-        $path = $this->request;
-        $blog_id = $this->blog_id;
-        $blog = $this->blog();
+        $ctx     =& $this->context();
+        $path    =  $this->request;
+        $blog_id =  $this->blog_id;
+        $blog    =  $this->blog();
 
         $this->log(sprintf('Looking up request %s for blog ID %s ', 
             $this->request, $this->blog_id));
         $data =& $this->resolve_url($this->request);
-    	$absolute_request = str_replace('//','/',($this->site_path.$this->request));
-    	$this->log('Full request path: '.$absolute_request);
-    	$this->log('Fileinfo data: '.print_r($data, true));
+        $absolute_request = str_replace('//','/',($this->site_path.$this->request));
+        $this->log('Full request path: '.$absolute_request);
+        $this->log('Fileinfo data: '.print_r($data, true));
 
         switch (TRUE) {
 
@@ -283,22 +283,22 @@ class MTSubRosa extends MT
          // Page not found
          if (!$data) {
 
-	     if (is_file($absolute_request) and is_readable($absolute_request)) {
+         if (is_file($absolute_request) and is_readable($absolute_request)) {
 // THIS WAS AN ABORTION.  TRIED TO DO THIS TO TAKE CARE OF
 // a problem where static files not known by MT but needing protection would 404.
 // Finally dealt with this on wellpoint's site installation by simply removing
 // protection but this is still a problem with PDFs and the like...
 // Need to figure this out...
-		readfile($absolute_request);
-	     } else {
+        readfile($absolute_request);
+         } else {
 
-             	$this->log('Page not found; returning 404');
+                $this->log('Page not found; returning 404');
 
-            	$this->http_error = 404;
-             	// This actually exits.
-             	$output = $ctx->error(
-                 	sprintf("Page not found - %s", $this->request));
-	    }
+                $this->http_error = 404;
+                // This actually exits.
+                $output = $ctx->error(
+                    sprintf("Page not found - %s", $this->request));
+        }
          }
          elseif (empty($output))    {
             $this->log('No output produced by mode handler; double-checking user auth before serving the page');
@@ -703,7 +703,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             $ctx->stash('StaticWebPath', $this->config['StaticWebPath']);
             $ctx->stash('PublishCharset', $this->config['PublishCharset']);
             $charset = $this->config['PublishCharset'];
-            $out = $ctx->tag('Include', array('type' => 'dynamic_error'));
+            $out = $ctx->tag('Include', array('identifier' => 'dynamic_error'));
             if (isset($out)) {
                 header("Content-type: text/html; charset=".$charset);
                 echo $out;

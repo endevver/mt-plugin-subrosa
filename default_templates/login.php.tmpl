@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+    <title>Textura Design &middot; Textura Design Incorporated</title>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en-us" />
+	<meta name="ROBOTS" content="ALL" />
+	<meta name="generator" content="http://www.movabletype.org/" />
+
+	<!-- relative links used by voice-readers and lynx -->	
+	<link rel="bookmark" title="bookmark" href="http://texturadesign.com/index.html" />
+	<link rel="home" title="Textura Design" href="http://texturadesign.com/" />
+	<link rel="first" title="Textura Design" href="http://texturadesign.com/" />
+
+    
+
+	<!-- JS -->
+
+	<script type="text/javascript" src="http://texturadesign.com/mt-site.js"></script>
+	
+	<!--CSS-->
+	<link rel="stylesheet" href="http://texturadesign.com/css/main.css" type="text/css" media="screen" />
+
+    <!-- CSS specific to this blog -->
+	<link rel="stylesheet" href="http://texturadesign.com/blog.css" type="text/css" media="screen" />
+
+
+
+    <!-- Icon -->
+    <link rel="shortcut icon" href="http://texturadesign.com/favicon.ico" />
+
+	<!--XML-->
+	<link rel="alternate" type="application/atom+xml" title="Atom" href="http://texturadesign.com/atom.xml" />
+	<link rel="alternate" type="application/rss+xml" title="RSS" href="http://texturadesign.com/index.xml" />
+	<link rel="alternate" type="application/rss+xml" title="RDF" href="http://texturadesign.com/index.rdf" />
+
+
+	<style type="text/css" media="screen">
+	   .error-message {
+           font-family: Verdana, Arial, sans-serif;
+           font-size: x-small;
+           color: #666;
+           line-height: 13px;
+           font-weight: bold;
+           margin: 20px auto 10px auto;
+           border: 1px #D44 solid;
+           background: #FEE;
+           padding: 10px;
+           width: 35%;
+           
+       }
+	</style>
+	
+
+</head>
+
+
+<body class="index-page page-home" id="texturadesign-com" >
+
+<!-- 
+	Header
+-->
+
+	<div id="header">
+		<a id="go-home" href="http://texturadesign.com/" title="Textura Design"></a>
+		<div id="tdi-links">
+			<ul>
+			<li id="tdi" title="Textura Design"><a href="http://www.texturadesign.com"></a></li>
+			</ul>
+		</div>
+	</div>
+
+<!-- 
+	Navbar
+-->
+
+	<div id="navbar">
+		<ul id="navtabs">
+			<li id="tab-home"     title="Home"    ><a href="http://texturadesign.com/"        ><span class="link-text">Home</span></a></li>
+			<li id="tab-blog"     title="Blog"    ><a href="http://texturadesign.com/blog"    ><span class="link-text">Blog</span></a></li>
+			<li id="tab-clients"  title="Clients" ><a href="http://texturadesign.com/clients.html" ><span class="link-text">Clients</span></a></li>
+			<li id="tab-projects" title="Projects"><a href="http://texturadesign.com/projects"><span class="link-text">Projects</span></a></li>
+			<li id="tab-about"    title="About"   ><a href="http://texturadesign.com/about"   ><span class="link-text">About</span></a></li>
+			<li id="tab-contact"  title="Contact" ><a href="http://texturadesign.com/contact" ><span class="link-text">Contact</span></a></li>
+		</ul>
+	</div>
+
+<!--
+	Start Content
+-->
+
+<a href="http://texturadesign.com/projects"><img src="http://texturadesign.com/images/brand_statement.gif" alt="Textura Design is a creative force specializing in business blogging for clients big and small." width="770" height="30" border="0" /></a>
+
+<div id="content-shell">
+
+<!--Entry Column-->
+
+                <h1>TEXTURA DESIGN CLIENT EXTRANET</h1>
+
+<!-- <div class="entry" style="margin-left: auto;margin-right: auto; width: 250px"> -->
+<div class="entry" style="text-align:center;;">
+<?php 
+    if ($msg = $params['error_message']) {        
+        print <<<EOF
+        <div class="error-message">
+            $msg
+        </div>
+EOF;
+    }
+?>
+    <form method="post" action="<?php print $_SERVER['SCRIPT_URI'] ?>" style="margin-left: auto; margin-right: auto; width: 310px;">
+    <div class="field" style="margin: 5px 0px;">
+        <label for="username" style="display: block; width: 100px; float: left;  font-size: 14px;">Username:</label>
+        <input type="text" name="username" id="username"  style="display:block; width: 200px; float: right;"/>
+    </div>
+    <div style="clear: both">&nbsp;</div>
+    <div class="field" style="margin: 0;">
+        <label for="password" style="display: block; width: 100px; float: left; font-size: 14px;">Password:</label>
+        <input type="password" name="password" id="password" style="display:block; width: 200px; float: right;" />
+    </div>
+    <div style="clear: both">&nbsp;</div>
+    <div class="field" style="text-align:center;margin: 0;">
+        <input type="hidden" name="login" value="1" />
+        <input type="hidden" name="redirect" value="<?php print $_GET['redirect'] ?>" />        
+        <input type="hidden" name="referrer" value="<?php print $_SERVER['HTTP_REFERER'] ?>" />
+        <input type="submit" value="Login &raquo;" />
+    </div>
+</form>
+
+
+<hr class="divider">
+</div>
+
+<!--
+	End All Content
+-->
+
+</div>
+
+<div id="footer"><span class="legal"><p>&copy; 1997 - 2007 Textura Design | Powered By <a href="http://www.sixapart.com/movabletype/">MT Enterprise 1.52</a></p>
+</span></div>
+
+
+</body>
+</html>

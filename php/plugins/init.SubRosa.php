@@ -13,35 +13,71 @@ if (isset($mt->config['PluginSwitch']['SubRosa/SubRosa.pl'])) {
 
 define('SUBROSA_ENABLED', 1);
 
-$ctx->add_tag('MTSubRosaUserName', 'smarty_function_MTSubRosaUserName');
 $ctx->add_tag(
-    'MTSubRosaUserDisplayName', 'smarty_function_MTSubRosaUserDisplayName');
-$ctx->add_tag('MTSubRosaUserID', 'smarty_function_MTSubRosaUserID');
+    'MTSubRosaUserName',
+    'smarty_function_MTSubRosaUserName'
+);
+$ctx->add_tag(
+    'MTSubRosaUserDisplayName',
+    'smarty_function_MTSubRosaUserDisplayName'
+);
+$ctx->add_tag(
+    'MTSubRosaUserID', 
+    'smarty_function_MTSubRosaUserID'
+);
+$ctx->add_tag(
+    'MTSubRosaUserEmail', 
+    'smarty_function_MTSubRosaUserEmail'
+);
+$ctx->add_tag(
+    'MTSubRosaUserURL',
+    'smarty_function_MTSubRosaUserURL'
+);
+$ctx->add_tag(
+    'MTSubRosaUserProfileURL',
+    'smarty_function_MTSubRosaUserProfileURL'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdatePermalink',
+    'smarty_function_MTSubRosaUpdatePermalink'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdateDate',
+    'smarty_function_MTSubRosaUpdateDate'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdateEntryTitle',
+    'smarty_function_MTSubRosaUpdateEntryTitle'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdateAuthor',
+    'smarty_function_MTSubRosaUpdateAuthor'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdateBlogName',
+    'smarty_function_MTSubRosaUpdateBlogName'
+);
+$ctx->add_tag(
+    'MTSubRosaUpdateBlogURL',
+    'smarty_function_MTSubRosaUpdateBlogURL'
+);
 
-$ctx->add_tag('MTSubRosaUserEmail', 'smarty_function_MTSubRosaUserEmail');
-$ctx->add_tag('MTSubRosaUserURL', 'smarty_function_MTSubRosaUserURL');
-$ctx->add_tag(
-    'MTSubRosaUserProfileURL','smarty_function_MTSubRosaUserProfileURL');
 $ctx->add_conditional_tag(
-    'MTSubRosaIfAuthorized','smarty_block_MTSubRosaIfAuthorized');
-$ctx->add_container_tag('MTSubRosaUpdates', 'smarty_block_MTSubRosaUpdates');
+    'MTSubRosaIfAuthorized',
+    'smarty_block_MTSubRosaIfAuthorized'
+);
+$ctx->add_container_tag(
+    'MTSubRosaUpdates',
+    'smarty_block_MTSubRosaUpdates'
+);
 $ctx->add_conditional_tag(
-    'MTSubRosaIfUpdateIsComment', 'smarty_block_MTSubRosaIfUpdateIsComment');
+    'MTSubRosaIfUpdateIsComment',
+    'smarty_block_MTSubRosaIfUpdateIsComment'
+);
 $ctx->add_conditional_tag(
-    'MTSubRosaIfUpdateIsEntry', 'smarty_block_MTSubRosaIfUpdateIsEntry');
-$ctx->add_tag(
-    'MTSubRosaUpdatePermalink', 'smarty_function_MTSubRosaUpdatePermalink');
-$ctx->add_tag(
-    'MTSubRosaUpdateDate', 'smarty_function_MTSubRosaUpdateDate');
-$ctx->add_tag(
-    'MTSubRosaUpdateEntryTitle', 'smarty_function_MTSubRosaUpdateEntryTitle');
-$ctx->add_tag(
-    'MTSubRosaUpdateAuthor', 'smarty_function_MTSubRosaUpdateAuthor');
-$ctx->add_tag(
-    'MTSubRosaUpdateBlogName', 'smarty_function_MTSubRosaUpdateBlogName');
-$ctx->add_tag(
-    'MTSubRosaUpdateBlogURL', 'smarty_function_MTSubRosaUpdateBlogURL');
-
+    'MTSubRosaIfUpdateIsEntry',
+    'smarty_block_MTSubRosaIfUpdateIsEntry'
+);
 
 
 // $ctx->add_container_tag('MyBlogs', 'smarty_block_MTMyBlogs');

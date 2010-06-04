@@ -1,0 +1,22 @@
+<?php
+
+$config['controller_blog_id'] = <$MTBlogID$>;
+$config['mt_dir'] = '/Users/jay/Sites/jay.local/html/ccsa/mt';
+$config['subrosa_path'] = 'plugins/SubRosa/php/SubRosa.class';
+$config['site_path'] = '<$MTBlogSitePath$>';
+//$config['log_output'] = '<$MTBlogSitePath$>php_debug.log';
+$config['exclude_blogs'] = array(1,2,9,14);
+$config['notify_user'] = 'blah';
+$config['notify_pass'] = 'blahpass';
+
+
+<MTBlogs>
+$config['blog_id'][<$MTBlogID$>]
+    = array(<MTAuthors><$MTAuthorID$>,</MTAuthors>);
+
+$config['blog_path']['<$MTBlogRelativeURL regex="s#/$##"$>']
+    = array(<MTAuthors><$MTAuthorID$>,</MTAuthors>);
+
+</MTBlogs>
+
+?>
