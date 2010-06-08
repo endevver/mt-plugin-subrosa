@@ -1,9 +1,9 @@
 <?php
-require_once 'MTObject.php';
+require_once 'MT/Object.php';
 /**
-* MTAsset - Asset object for dynamic MT
+* MT_Asset - Asset object for dynamic MT
 */
-class MTAsset extends MTObject
+class MT_Object_Asset extends MT_Object
 {
     var $class_prefix = 'asset';
     var $properties = array(
@@ -23,7 +23,7 @@ class MTAsset extends MTObject
         global $mt;
         if ($results = $mt->db->load('asset', $terms)) {
             foreach ($results as $data) {
-                $object = new MTAsset($data);
+                $object = new MT_Asset($data);
                 $objects[] = $object;
             }
             return (count($objects) == 1) ? $objects[0] : $objects;

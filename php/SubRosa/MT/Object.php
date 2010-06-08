@@ -1,8 +1,8 @@
 <?php
 /**
-* MTObject - Generic object class for dynamic MT
+* MT_Object - Generic object class for dynamic MT
 */
-class MTObject
+class MT_Object
 {
 
     function __construct($data=null) {

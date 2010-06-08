@@ -1,9 +1,9 @@
 <?php
-require_once 'MTObject.php';
+require_once 'MT/Object.php';
 /**
 * MTSession - Session handling for the dynamic publishing engine
 */
-class MTSession extends MTObject
+class MT_Object_Session extends MT_Object
 {
 
     var $class_prefix    = 'session';

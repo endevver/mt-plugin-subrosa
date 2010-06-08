@@ -1,11 +1,11 @@
 <?php
-require_once 'MTAuthor.php';
-require_once 'MTSession.php';
+require_once 'MT/Object/Author.php';
+require_once 'MT/Object/Session.php';
 
 /**
 * MTAuth - handles authentication for dynamic MT
 */
-class MTAuth
+class MT_Auth
 {
     var $username;
     var $password;
@@ -192,10 +192,10 @@ class MTAuth
         // Load user by username, return if none found
         $user = MTAuthor::load(array('name' => $name));
         if (! is_object($user)) {
-            require_once('MTLog.php');
+            require_once('MT/Object/Log.php');
             $msg = sprintf("Failed login attempt by unknown user '%s'.", $name);
             $this->mt->mtlog(
-                array('message' => $msg, 'level' => MTLog::level('WARNING')));
+                array('message' => $msg, 'level' => MT_Log::level('WARNING')));
             $this->log("$msg No user object returned from MTAuthor::load");
             $this->mt->log_dump();
             return;            
@@ -222,10 +222,10 @@ class MTAuth
             $this->log('Passwords match');
             return $user;
         } else {
-            require_once('MTLog.php');
+            require_once('MT/Object/Log.php');
             $msg = sprintf("Invalid login attempt from user '%s'.", $name);
             $this->mt->mtlog(
-                array('message' => $msg, 'level' => MTLog::level('WARNING')));
+                array('message' => $msg, 'level' => MT_Log::level('WARNING')));
             $this->log("$msg Password mismatch");
             // $this->mt->log_dump();
             // return;

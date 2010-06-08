@@ -1,9 +1,9 @@
 <?php
-require_once 'MTObject.php';
+require_once 'MT/Object.php';
 /**
 * MTAuthor - Author object for dynamic MT
 */
-class MTAuthor extends MTObject
+class MT_Object_Author extends MT_Object
 {
     // var $name = '';
     // var $password = '';

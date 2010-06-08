@@ -1,9 +1,9 @@
 <?php
-require_once 'MTObject.php';
+require_once 'MT/Object.php';
 /**
-* MTLog - Activity log object for the dynamic publishing engine
+* MT_Log - Activity log object for the dynamic publishing engine
 */
-class MTLog extends MTObject
+class MT_Object_Log extends MT_Object
 {
 
     var $class_prefix = 'log';

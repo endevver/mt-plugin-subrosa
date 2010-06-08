@@ -1,9 +1,9 @@
 <?php
-require_once 'MTObject.php';
+require_once 'MT/Object.php';
 /**
 * MTEntry - Entry object for dynamic MT
 */
-class MTEntry extends MTObject
+class MT_Object_Entry extends MT_Object
 {
     var $class_prefix = 'entry';
     var $properties = array(
