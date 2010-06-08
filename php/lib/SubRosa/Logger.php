@@ -16,7 +16,7 @@ class Logger
     var $log = array();
     var $driver = '';
 
-    function Logger($output='')
+    function __construct($output='')
     {
         // Log messages to file
         if (strpos($output, '/') !== false) {

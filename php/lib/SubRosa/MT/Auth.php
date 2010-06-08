@@ -10,7 +10,7 @@ class MT_Auth
     var $username;
     var $password;
 
-    function MTAuth($username=null, $pass=null) {
+    function __construct($username=null, $pass=null) {
         global $mt;
         $this->mt =& $mt;
         $this->mt->marker();
