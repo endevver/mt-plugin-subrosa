@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Twitter - A logging class for SubRosa
+* SubRosa_Logger_Twitter - A logging class for SubRosa
 
 *
 *    $this->logger = new Logger('screen');
@@ -9,13 +9,13 @@
 *
 
 */
-class Twitter
+class SubRosa_Logger_Twitter
 {
     var $user = '';
     var $pass = '';
     var $update_api = 'http://twitter.com/statuses/update.xml';
     
-    function Twitter($user='', $pass='')
+    function __construct($user='', $pass='')
     {
         $this->user = $user;
         $this->pass = $pass;

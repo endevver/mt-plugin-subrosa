@@ -3,15 +3,15 @@
 // === TextMate error handling ===
 
 /**
-* Logger - A logging/debugging class for SubRosa
+* SubRosa_Logger - A logging/debugging class for SubRosa
 
 *
-*    $this->logger = new Logger('screen');
+*    $this->logger = new SubRosa_Logger('screen');
 *    $this->screen = $logger->screen
 *
 
 */
-class Logger
+class SubRosa_Logger
 {
     var $log = array();
     var $driver = '';
@@ -20,15 +20,15 @@ class Logger
     {
         // Log messages to file
         if (strpos($output, '/') !== false) {
-            $this->driver = new FileLogger($output);
+            $this->driver = new SubRosa_Logger_File($output);
         }
         // Log messages to screen
         elseif ($output == 'screen') {
-            $this->driver = new ScreenLogger;
+            $this->driver = new SubRosa_Logger_Screen;
         }
         // Log messages to stderr
         else {
-            $this->driver = new SysLogger;
+            $this->driver = new SubRosa_Logger_Syslog;
         }
     }
 
@@ -114,11 +114,11 @@ class Logger
 }
 
 /**
-* SysLogger
+* SubRosa_Logger_Syslog
 */
-class SysLogger extends Logger
+class SubRosa_Logger_Syslog extends SubRosa_Logger
 {
-    function SysLogger() { 
+    function __construct() { 
     }
 
     function log_dump()
@@ -134,12 +134,12 @@ class SysLogger extends Logger
     }
 }
 /**
-* ScreenLogger
+* SubRosa_Logger_Screen
 */
-class ScreenLogger extends Logger
+class SubRosa_Logger_Screen extends SubRosa_Logger
 {
 
-    function ScreenLogger($opts='') { 
+    function __construct($opts='') { 
     }
 
     function log_dump($opts='') {
@@ -151,7 +151,7 @@ class ScreenLogger extends Logger
         } else {
             // Fall back console view...
             // parent::log_dump($this->log);
-            $stderr = new SysLogger;
+            $stderr = new SubRosa_Logger_Syslog;
             array_unshift($this->log, "Writing to syslog instead of screen as directed");
             $stderr->log =& $this->log;
             $stderr->log_dump();
@@ -160,15 +160,15 @@ class ScreenLogger extends Logger
 }
 
 /**
-* FileLogger
+* SubRosa_Logger_File
 */
-class FileLogger extends Logger
+class SubRosa_Logger_File extends SubRosa_Logger
 {
 
     var $handle = NULL;
     var $file;
     
-    function FileLogger($file) {
+    function __construct($file) {
         // Log messages to file
         if (  file_exists($file) ) {
             $this->file = $file;
@@ -192,7 +192,7 @@ class FileLogger extends Logger
             }
         }
 
-        $screen = new ScreenLogger;
+        $screen = new SubRosa_Logger_Screen;
         array_unshift($this->log, "Can't write to log at $log!");
         $screen->log = $this->log;
         $screen->log_dump();

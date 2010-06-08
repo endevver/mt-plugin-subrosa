@@ -1,8 +1,8 @@
 <?php
 /**
-* SubRosaPolicy - Generic policy object class for SubRosa
+* SubRosa_PolicyAbstract - Abstract policy class for SubRosa
 */
-abstract class SubRosaPolicy
+abstract class SubRosa_PolicyAbstract
 {
 
     abstract public function is_authorized ( );

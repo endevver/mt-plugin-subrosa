@@ -1,8 +1,8 @@
 <?php
 /**
-* SubRosaViewer - Our MTViewer stuff...
+* SubRosa_Viewer - Our MTViewer stuff...
 */
-class SubRosaViewer {
+class SubRosa_Viewer {
 
     $is_virtual_request = 0;
 
@@ -39,7 +39,7 @@ class SubRosaViewer {
     if ( $_SERVER['SUBROSA_PASSTHRU'] == 1 ) {
 
         error_log($_SERVER['SCRIPT_URL'].': Inspect and passthrough');
-        $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
+        $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
     }
     elseif (    isset($_REQUEST['redirect'])
@@ -47,7 +47,7 @@ class SubRosaViewer {
 
         error_log($_SERVER['SCRIPT_URL'].
             ': Authorized redirect for '.$_REQUEST['redirect']);
-        $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
+        $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
         $mt->redirect($_REQUEST['redirect']);
         $mt->view();
@@ -69,7 +69,7 @@ class SubRosaViewer {
             or isset($_COOKIE['mt_user']) ) {
         error_log($_SERVER['SCRIPT_URL'].
             ': Have session information available in gateway script. Loading '.$cfg['mt_dir']."/$subrosa_path");
-        $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
+        $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
         if (isset($_POST['login']) and isset($_REQUEST['redirect'])) {
             $mt->redirect($_REQUEST['redirect']);        

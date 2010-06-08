@@ -47,7 +47,7 @@ require_once("mt.php");
 /**
 * MT-SubRosa
 */
-class MTSubRosa extends MT
+class SubRosa extends MT
 {
 
     //define('VERSION', 0.1); // Should be done in the class

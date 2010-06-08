@@ -16,7 +16,7 @@ $cfg = init_subrosa_config();
 
 require( $cfg['mt_dir'] . "/". $cfg['subrosa_path'] );
 
-$mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
+$mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
 $mt->bootstrap();
 
