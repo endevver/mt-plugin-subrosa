@@ -26,8 +26,8 @@ class SubRosa_MT_Auth
         $this->mt->marker();
 
         // Get PHP session information
-        $phpname = phpsession('name');
-        $phpsid = phpsession('session_id');
+        $phpname = SubRosa_Util::phpsession('name');
+        $phpsid = SubRosa_Util::phpsession('session_id');
 
         // Get MT cookie information
         list($cname, $csid, $cpersist) = $this->mt->user_cookie();
@@ -51,7 +51,7 @@ class SubRosa_MT_Auth
         else {
             
             // Otherwise, discard the PHP session information
-            phpsession(false);
+            SubRosa_Util::phpsession(false);
 
             // If we have a user cookie, load data from there.
             if (isset($cname) and isset($csid)) {
@@ -94,7 +94,7 @@ class SubRosa_MT_Auth
         if (isset($user) and is_object($user)) {
             $hash = $user->property_hash();
             foreach ($hash as $key => $val) {
-                phpsession($key, $val);
+                SubRosa_Util::phpsession($key, $val);
             }
             return $user;
         }
@@ -119,7 +119,7 @@ class SubRosa_MT_Auth
         }
 
         if (isset($session) and is_object($session)) {
-            phpsession('session_id', $session->get('id'));
+            SubRosa_Util::phpsession('session_id', $session->get('id'));
             return $session;
         }
     }
@@ -179,7 +179,7 @@ class SubRosa_MT_Auth
         $session->kill();
         $this->session(false);
         
-        phpsession(false);
+        SubRosa_Util::phpsession(false);
     }
 
     function authenticate($name, $pass, $crypted=0) {

@@ -134,7 +134,8 @@ class SubRosa extends MT
         require_once('SubRosa/Util.php');
         date_default_timezone_set('America/Los_Angeles');
 
-        $this->template_dir = os_path(dirname(__FILE__),'/tmpl');
+        $this->template_dir
+            = SubRosa_Util::os_path(dirname(__FILE__),'/tmpl');
         $this->template['debug'] = 'debug-jay.tpl';
         $this->template['login'] = 'login.tpl';
 
@@ -145,9 +146,9 @@ class SubRosa extends MT
         
         $this->log("Site root: $site_root");
         
-        $this->page['login'] = os_path($site_root, 'login.php');
+        $this->page['login'] = SubRosa_Util::os_path($site_root, 'login.php');
         $this->log('Default login page: '.$this->page['login']);
-        $this->page['error'] = os_path($site_root, 'error.php');
+        $this->page['error'] = SubRosa_Util::os_path($site_root, 'error.php');
         $this->log('Default error page: '.$this->page['error']);
         foreach ($this->page as $type => $file) {
             if ( ! file_exists($file) ) {
@@ -281,7 +282,7 @@ class SubRosa extends MT
             $ctx->compile_check   =  true;
             $ctx->force_compile   =  true;
             $ctx->debugging_ctrl = '';
-            $ctx->debug_tpl = os_path($this->config['MTDir'],
+            $ctx->debug_tpl = SubRosa_Util::os_path($this->config['MTDir'],
                                     '/php/extlib/smarty/libs/debug.tpl');
         }
 
@@ -719,7 +720,8 @@ class SubRosa extends MT
         }
 
         // Otherwise, we fall back to the built in page
-        $tpl = os_path($this->template_dir, $this->template['login']);
+        $tpl = SubRosa_Util::os_path( $this->template_dir,
+                                      $this->template['login'] );
 
         $this->set_default_template_params();
 

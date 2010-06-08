@@ -120,7 +120,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
         $this->create_cookie($user->get('name'), $session_id);
         
         $this->set('id', $session_id);
-        phpsession('session_id', $session_id);
+        SubRosa_Util::phpsession('session_id', $session_id);
 
         return $session_id;
     }
@@ -140,7 +140,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
         $this->set('username', null);
         $this->set('id', null);
         $this->set('userid', null);
-        phpsession('session_id', false);
+        SubRosa_Util::phpsession('session_id', false);
     }
 
 

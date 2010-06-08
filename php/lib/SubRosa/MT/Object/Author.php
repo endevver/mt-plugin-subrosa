@@ -49,7 +49,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
         $name = $this->get('name');
         $session = new MTSession(array('userid' => $id, 'username' =>$name));
         $session->create();
-        phpsession('session_id', $session->get('id'));
+        SubRosa_Util::phpsession('session_id', $session->get('id'));
         return $session;
     }
 
