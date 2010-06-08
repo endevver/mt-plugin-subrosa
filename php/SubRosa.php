@@ -99,7 +99,7 @@ class MTSubRosa extends MT
         parent::init($blog_id, $cfg_file);
         $this->log('Current blog ID: '.$this->blog_id);
 
-        require_once('lib/Utils.inc');
+        require_once('Util.php');
         date_default_timezone_set('America/Los_Angeles');
 
         $this->template_dir = os_path(dirname(__FILE__),'/tmpl');
@@ -129,7 +129,7 @@ class MTSubRosa extends MT
 
     function init_logger() {
         if (isset($this->logger)) return;
-        require_once('lib/log.php');
+        require_once('Logger.php');
         $this->logger = new Logger($this->log_output);
     }
 

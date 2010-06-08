@@ -96,7 +96,7 @@ sub _hdlr_subrosa {
     
     require File::Spec;
     $param{subrosa_lib} = File::Spec->catfile( 
-        $ENV{MT_HOME}, $plugin->envelope,'php','lib','Utils.inc');
+        $ENV{MT_HOME}, $plugin->envelope,'php','lib','Util.php');
     
     $param{role_var} = '$roles = Array("'. join('","', @roles) .'");'
         if @roles;

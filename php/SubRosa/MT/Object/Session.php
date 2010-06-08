@@ -93,7 +93,7 @@ class MT_Object_Session extends MT_Object
         }
 
         // Compile session row data, serializing the session_data field
-        require_once('lib/Utils.inc');
+        require_once('Util.php');
         $session_id = magic_token();
         $time = time();
         $data = $mtdb->serializer->serialize(
