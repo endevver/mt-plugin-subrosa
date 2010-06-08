@@ -5,7 +5,7 @@
 class MTObject
 {
 
-    function MTObject($data=null) {
+    function __construct($data=null) {
         global $mt;
         $this->mt = $mt;
         $this->mt->marker();

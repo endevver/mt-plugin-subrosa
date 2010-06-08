@@ -52,19 +52,19 @@ class MTSubRosa extends MT
 
     //define('VERSION', 0.1); // Should be done in the class
 
-    var $debugging = false;
-    var $logger = NULL;
+    var $debugging           = false;
+    var $logger              = NULL;
     var $log_output;
-    var $log_delay = true;
-    var $log_queries = false;
+    var $log_delay           = true;
+    var $log_queries         = false;
     var $controller_blog_id;
     var $plugins_initialized = false;
-    var $user_cookie = 'mt_user';
-    var $user_session_key = 'current_user';
+    var $user_cookie         = 'mt_user';
+    var $user_session_key    = 'current_user';
     var $notify_user;
     var $notify_password;
     
-    function MTSubRosa($cfg_file, $blog_id = null)
+    function __construct($cfg_file, $blog_id = null)
     {
         $this->error_level = E_ALL ^ E_NOTICE;
         global $subrosa_config;
@@ -142,27 +142,75 @@ class MTSubRosa extends MT
         }
     }
 
+    // There are three types of SubRosa plugins which we differentiate by
+    // naming convention for usability.
+    //
+    //  * init - Loaded by both SubRosa and MT's dynamic publishing engine.
+    //           Used for defining MT initialization data (e.g. 
+    //           template tags, callbacks, etc) and executing anything that
+    //           should be run early in the execution process (e.g. defining
+    //           functions other code depends on, pre-modifying the
+    //           environment or request, etc)
+    //
+    //  * policy - (SubRosa only) SubRosa access policies which
+    //             define what content can be accessed by who how.
+    //
+    //  * module - (SubRosa only) Plugins which extend and/or modify the
+    //             functionality of but do not fit one of the above.
+    //
     function init_subrosa_plugins() {
         global $base_dir;
         $plugin_dir = $base_dir . DIRECTORY_SEPARATOR . 'plugins';
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
+
+        if ( isset( $_SERVER['SUBROSA_POLICY'] ) ) {
+            $request_policy = strtolower( $_SERVER['SUBROSA_POLICY'] );
+        }
+
         if (is_dir($plugin_dir) and ($dh = opendir($plugin_dir))) {
             while (($file = readdir($dh)) !== false) {
-                if (preg_match('/^module\.(.+?)\.(php|inc)$/',
-                            $file, $matches)) {
-                    // load 'module' plugin file
-                    $this->log("Module: $file");
+
+                // Only process plugin files starting with
+                // a valid type (see above) and ending in ".php".
+                if ( preg_match('/^(init|policy|module)\.(.+?)\.php$/',
+                                    $file, $matches)) {
+                    $type = ucfirst(    $matches[1] );
+                    $base = strtolower( $matches[2] );
+
+                    // If a policy is defined for this request, skip
+                    // any other policies since they are unneeded.
+                    if (   isset( $request_policy ) 
+                        && ( $type == 'Policy' )
+                        && ( $base != $request_policy )) {
+                        continue;
+                    }
+
+                    $this->log( "$type: $base");
                     require_once("$plugin_dir/$file");
-                 } elseif (preg_match('/^init\.(.+?)\.php$/', $file, $matches)) {
-                     // load 'init' plugin file
-                     $this->log("Init: $file");
-                     require_once("$plugin_dir/$file");
-                 }
+                }
             }
             closedir($dh);
         }
+        
+        // Check that any requested policy was properly loaded. 
+        // The PHP constant SUBROSA_POLICY should be defined in 
+        // the policy plugin file and contains the PHP class name.
+        if ( defined( 'SUBROSA_POLICY' )) {
+            $SUBROSA_POLICY = SUBROSA_POLICY; // new CONSTANT() doesn't work
+            $this->policy = new $SUBROSA_POLICY();
+        }
+        elseif ( isset( $request_policy )) {
+            die ('ERROR: The requested SubRosa policy, '.SUBROSA_POLICY
+                .', could not be loaded');
+        }
+
     }
 
+    /* *********************************************************************
+     *  VIEWER METHODS
+     *  The following methods are only used when a protected 
+     *  page is dynamically rendered
+     ********************************************************************** */
     function init_viewer() {
 
         ob_start(); 
