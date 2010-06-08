@@ -83,7 +83,10 @@ class MTAuthor extends MTObject
 
     function has_perms($blog_id) {
 
-        $this->log(sprintf('Checking perms for user ID %s on blog ID %s', $this->get('id'), $blog_id));
+        $this->log(sprintf(
+            'Checking perms for user ID %s on blog ID %s', 
+                $this->get('id'), $blog_id
+        ));
         global $subrosa_config;
         if (isset($subrosa_config)) {
             $authorized_users = $subrosa_config['blog_id'][$blog_id];

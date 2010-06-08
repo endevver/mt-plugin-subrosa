@@ -54,25 +54,25 @@ function unpack_session_data($sdata) {
 
 function sysdebug() {
     ob_start();
-	$variableSets = array(
-		"Post:" => $_POST, 
-		"Get:" => $_GET, 
-		"Session:" => $_SESSION, 
-		"Cookies:" => $_COOKIE, 
-		"Server:" => $_SERVER, 
-		"Environment:" => $_ENV
-	); 
+    $variableSets = array(
+        "Post:" => $_POST, 
+        "Get:" => $_GET, 
+        "Session:" => $_SESSION, 
+        "Cookies:" => $_COOKIE, 
+        "Server:" => $_SERVER, 
+        "Environment:" => $_ENV
+    ); 
 
-	print '<div style="text-align:left">';
-	foreach ( $variableSets as $setName => $variableSet ) { 
-		if ( isset( $variableSet ) ) { 
-			print "<br /><br />\n\n<hr size='1'>"; 
-			print "$setName<br />\n"; 
-			array_walk( $variableSet, 'printElementHtml' ); 
-		} 
-	}
-		
-	print '</div>';
+    print '<div style="text-align:left">';
+    foreach ( $variableSets as $setName => $variableSet ) { 
+        if ( isset( $variableSet ) ) { 
+            print "<br /><br />\n\n<hr size='1'>"; 
+            print "$setName<br />\n"; 
+            array_walk( $variableSet, 'printElementHtml' ); 
+        } 
+    }
+        
+    print '</div>';
     $out = ob_get_contents();
     ob_flush();
     return $out;
@@ -80,9 +80,9 @@ function sysdebug() {
 
 function printElementHtml( $value, $key ) { 
     ob_start();
-	echo $key . " => "; 
-	print_r( $value ); 
-	print "<br />\n"; 
+    echo $key . " => "; 
+    print_r( $value ); 
+    print "<br />\n"; 
     $out = ob_get_contents();
     ob_flush();
     return $out;

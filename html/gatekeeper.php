@@ -1,40 +1,41 @@
 <?php
-//kill_php_current_session();
-// show_current_request_info();
 
-ini_set('session.use_only_cookies', true); 
-session_name('SubRosa');
-session_start();
+// SubRosa request gatekeeper script
+//
+// This script bootstraps the SubRosa framework, inspects the 
+// incoming request and handles it based on available information
+// and specified policy.  It can handle requests for both statically
+// and dynamically generated content and does one of the following:
+//
+//    * Facilitates delivery (and compilation, if needed) of the
+//      requested resource.
+//    * Deny the request outright, with an optional error page.
+//    * Modify the request with a redirect (e.g. to a login page)
 
-$subrosa_config = subrosa_config();
-$MTDir          = $subrosa_config['mt_dir'];
-$subrosa_path   = $subrosa_config['subrosa_path'];
-$request_path = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_URL'];
-$site_path      = $subrosa_config['site_path'];
-if ( empty($site_path) ) $site_path = $_SERVER['DOCUMENT_ROOT'];
+$is_virtual_request = 0;
 
-// Requests for directories and non-existent files are virtual and must be
-// run through SubRosa.
-$virtual_request = (   ! is_file( $request_path )
-                    or ! file_exists( $request_path ) ) ? 1 : 0;
+$cfg = initialize_subrosa();
+
+
+
 
 if ( $_SERVER['SUBROSA_PASSTHRU'] == 1 ) {
 
     error_log($_SERVER['SCRIPT_URL'].': Inspect and passthrough');
-    include("$MTDir/$subrosa_path");
-    $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
+    $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
+
 }
 elseif (    isset($_REQUEST['redirect'])
     and is_authorized(isset($_REQUEST['redirect']))) {
 
     error_log($_SERVER['SCRIPT_URL'].
         ': Authorized redirect for '.$_REQUEST['redirect']);
-    include("$MTDir/$subrosa_path");
-    $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
+    $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
     $mt->redirect($_REQUEST['redirect']);
     $mt->view();
     exit;
+
 }
 elseif ( ! $virtual_request ) {
     if ( unprotected_request() or is_authorized( $_SERVER['SCRIPT_URL'] ) ) {
@@ -44,14 +45,14 @@ elseif ( ! $virtual_request ) {
         // serve_request();
         // exit;
     }
+
 }
 elseif (   $virtual_request
         or isset($_POST['login'])
         or isset($_COOKIE['mt_user']) ) {
     error_log($_SERVER['SCRIPT_URL'].
-        ': Have session information available in gateway script. Loading '."$MTDir/$subrosa_path");
-    include("$MTDir/$subrosa_path");
-    $mt = new MTSubRosa("$MTDir/mt-config.cgi", $_GET['blog_id']);
+        ': Have session information available in gateway script. Loading '.$cfg['mt_dir']."/$subrosa_path");
+    $mt = new MTSubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
     if (isset($_POST['login']) and isset($_REQUEST['redirect'])) {
         $mt->redirect($_REQUEST['redirect']);        
@@ -59,6 +60,7 @@ elseif (   $virtual_request
 
     $mt->view();
     exit;
+
 }
 else {
     error_log($_SERVER['SCRIPT_URL'].
@@ -71,6 +73,43 @@ else {
 }
 
 
+
+function initialize_subrosa() {
+    
+    //kill_php_current_session();
+    // show_current_request_info();
+
+    ini_set('session.use_only_cookies', true); 
+    session_name('SubRosa');
+    session_start();
+
+    require('subrosa_config.php');
+    $cfg =& $config;
+
+    if ( ! isset( $cfg['site_path'] ))
+        $cfg['site_path'] = $_SERVER['DOCUMENT_ROOT'];
+
+    if ( ! isset( $cfg['subrosa_path'] ))
+        $cfg['subrosa_path'] = 'plugins/SubRosa/php/SubRosa.class';
+
+    if ( ! isset( $cfg['mt_dir'] ))
+        $cfg['mt_dir'] = $_SERVER['MT_HOME'];
+
+    if ( ! isset( $cfg['mt_dir'] ))
+        die ("Cannot locate MT_HOME at " . __FILE__ . ", line " . __LINE__);
+
+
+    include( $cfg['mt_dir'] . "/". $cfg['subrosa_path'] );
+
+    // Requests for directories and non-existent files are virtual and must be
+    // run through SubRosa.
+    global $is_virtual_request;
+    $req_path           = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_URL'];
+    $is_virtual_request = (   ! is_file( $req_path )
+                        or ! file_exists( $req_path ) ) ? 1 : 0;
+
+    return $cfg;
+}
 
 function unprotected_request() {
     $url = $_SERVER['SCRIPT_URL'];
@@ -143,8 +182,8 @@ function is_page_request() {
 // fileinfo();
 
 function serve_request() {
-    global $site_path;
-    $name = $site_path.$_SERVER['SCRIPT_URL'];
+    global $cfg;
+    $name = $cfg['site_path'].$_SERVER['SCRIPT_URL'];
 
     $path_parts = pathinfo($name);
     $ext = $path_parts['extension'];
@@ -168,7 +207,7 @@ function info() {
 
 function fileinfo() {
     $request = $_SERVER['SCRIPT_URL'];
-    global $site_path;
+    global $cfg;
     $finfo = new finfo(FILEINFO_MIME, '/usr/share/file/magic'); // return mime type ala mimetype extension
 
     if (!$finfo) {
@@ -177,7 +216,7 @@ function fileinfo() {
     }
 
     /* get mime-type for a specific file */
-    $filename = $site_path.$request;
+    $filename = $cfg['site_path'] . $request;
     echo $finfo->file($filename);
 
     /* close connection */
@@ -425,11 +464,6 @@ function init_mimetype() {
     'movie' => 'video/x-sgi-movie',
     'ice' => 'x-conference/x-cooltalk');
     
-}
-
-function subrosa_config() {
-    require('subrosa_config.php');
-    return $config;
 }
 
 function kill_php_current_session() {
