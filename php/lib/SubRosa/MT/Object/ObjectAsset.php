@@ -1,9 +1,9 @@
 <?php
-require_once 'MT/Object.php';
+require_once 'SubRosa/MT/Object.php';
 /**
 * MT_ObjectAsset - ObjectAsset object for dynamic MT
 */
-class MT_Object_Object_ObjectAsset extends MT_Object
+class SubRosa_MT_Object_ObjectAsset extends SubRosa_MT_Object
 {
     var $class_prefix = 'objectasset';
     var $properties = array(

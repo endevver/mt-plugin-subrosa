@@ -1,11 +1,11 @@
 <?php
-require_once 'MT/Object/Author.php';
-require_once 'MT/Object/Session.php';
+require_once 'SubRosa/MT/Object/Author.php';
+require_once 'SubRosa/MT/Object/Session.php';
 
 /**
 * MTAuth - handles authentication for dynamic MT
 */
-class MT_Auth
+class SubRosa_MT_Auth
 {
     var $username;
     var $password;
@@ -192,7 +192,7 @@ class MT_Auth
         // Load user by username, return if none found
         $user = MTAuthor::load(array('name' => $name));
         if (! is_object($user)) {
-            require_once('MT/Object/Log.php');
+            require_once('SubRosa/MT/Object/Log.php');
             $msg = sprintf("Failed login attempt by unknown user '%s'.", $name);
             $this->mt->mtlog(
                 array('message' => $msg, 'level' => MT_Log::level('WARNING')));
@@ -222,7 +222,7 @@ class MT_Auth
             $this->log('Passwords match');
             return $user;
         } else {
-            require_once('MT/Object/Log.php');
+            require_once('SubRosa/MT/Object/Log.php');
             $msg = sprintf("Invalid login attempt from user '%s'.", $name);
             $this->mt->mtlog(
                 array('message' => $msg, 'level' => MT_Log::level('WARNING')));

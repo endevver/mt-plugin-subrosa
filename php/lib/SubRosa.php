@@ -99,7 +99,7 @@ class MTSubRosa extends MT
         parent::init($blog_id, $cfg_file);
         $this->log('Current blog ID: '.$this->blog_id);
 
-        require_once('Util.php');
+        require_once('SubRosa/Util.php');
         date_default_timezone_set('America/Los_Angeles');
 
         $this->template_dir = os_path(dirname(__FILE__),'/tmpl');
@@ -129,7 +129,7 @@ class MTSubRosa extends MT
 
     function init_logger() {
         if (isset($this->logger)) return;
-        require_once('Logger.php');
+        require_once('SubRosa/Logger.php');
         $this->logger = new Logger($this->log_output);
     }
 
@@ -215,7 +215,7 @@ class MTSubRosa extends MT
 
         ob_start(); 
 
-        if ($this->debugging)  require_once("MTUtil.php");
+        if ($this->debugging)  require_once("SubRosa/MT/Util.php");
         $this->marker('Initializing viewer');
 
         $ctx =& $this->context();
@@ -448,7 +448,7 @@ class MTSubRosa extends MT
                 $ctx->stash('archive_category', $archive_category);
             }
             if (isset($ts)) {
-                require_once("MTUtil.php");
+                require_once("SubRosa/MT/Util.php");
                 if ($at == 'Yearly') {
                     $ts = substr($ts, 0, 4);
                 } elseif ($at == 'Monthly') {
@@ -540,7 +540,7 @@ class MTSubRosa extends MT
         
         // Look up the user in the database by username and password
         // and start a session if found.
-        require_once('lib/MTAuth.php');
+        require_once('SubRosa/MT/Auth.php');
         $auth = new MTAuth($_POST['username'], $_POST['password']);
         $this->auth =& $auth;
         $user = $auth->login();
@@ -590,7 +590,7 @@ class MTSubRosa extends MT
     function handle_auth($fileinfo = null) {
         $this->marker();
         
-        require_once('lib/MTAuth.php');
+        require_once('SubRosa/MT/Auth.php');
         $auth = new MTAuth();
         $this->auth =& $auth;
         $auth->init();
@@ -633,7 +633,7 @@ class MTSubRosa extends MT
     function handle_logout($fileinfo = null) {
         $this->marker();
 
-        require_once('lib/MTAuth.php');
+        require_once('SubRosa/MT/Auth.php');
         $auth = new MTAuth();
         $this->auth =& $auth;
         $auth->init();
@@ -985,7 +985,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
 
     function mtlog($msg) {
         $this->marker();
-        require_once('MT/Object/Log.php');
+        require_once('SubRosa/MT/Object/Log.php');
         if (is_array($msg)) {
             $log = new MT_Log($msg);
         } else {

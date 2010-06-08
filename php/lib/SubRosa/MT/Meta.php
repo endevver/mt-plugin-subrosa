@@ -2,7 +2,7 @@
 /**
 * MTMeta - Generic object class for dynamic MT
 */
-class MT_Meta
+class SubRosa_MT_Meta
 {
 
     function __construct($data=null) {

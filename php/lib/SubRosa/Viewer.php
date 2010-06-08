@@ -84,7 +84,7 @@ class SubRosaViewer {
             ': No session information available for gateway script');
         if (is_page_request()) {
             error_log('Kicking to login');
-            include('login.php');
+            require('login.php');
         }
         exit;
     }

@@ -1,9 +1,9 @@
 <?php
-require_once 'MT/Object.php';
+require_once 'SubRosa/MT/Object.php';
 /**
 * MTAuthor - Author object for dynamic MT
 */
-class MT_Object_Author extends MT_Object
+class SubRosa_MT_Object_Author extends SubRosa_MT_Object
 {
     // var $name = '';
     // var $password = '';

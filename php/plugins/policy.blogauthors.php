@@ -3,7 +3,7 @@
 * PolicyBlogAuthors - SubRosa policy object which restricts blog
 *                     resources to only authors on that blog.
 */
-class PolicyBlogAuthors extends SubRosaPolicy {
+class Policy_BlogAuthors extends SubRosa_PolicyAbstract {
     
     public function is_protected  ( );
     public function login_page    ( $params            );

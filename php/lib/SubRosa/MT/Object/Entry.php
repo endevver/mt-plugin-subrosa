@@ -1,9 +1,9 @@
 <?php
-require_once 'MT/Object.php';
+require_once 'SubRosa/MT/Object.php';
 /**
 * MTEntry - Entry object for dynamic MT
 */
-class MT_Object_Entry extends MT_Object
+class SubRosa_MT_Object_Entry extends SubRosa_MT_Object
 {
     var $class_prefix = 'entry';
     var $properties = array(

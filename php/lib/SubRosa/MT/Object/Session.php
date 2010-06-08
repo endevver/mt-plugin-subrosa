@@ -1,9 +1,9 @@
 <?php
-require_once 'MT/Object.php';
+require_once 'SubRosa/MT/Object.php';
 /**
 * MTSession - Session handling for the dynamic publishing engine
 */
-class MT_Object_Session extends MT_Object
+class SubRosa_MT_Object_Session extends SubRosa_MT_Object
 {
 
     var $class_prefix    = 'session';
@@ -93,7 +93,7 @@ class MT_Object_Session extends MT_Object
         }
 
         // Compile session row data, serializing the session_data field
-        require_once('Util.php');
+        require_once('SubRosa/Util.php');
         $session_id = magic_token();
         $time = time();
         $data = $mtdb->serializer->serialize(

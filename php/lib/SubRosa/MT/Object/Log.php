@@ -1,9 +1,9 @@
 <?php
-require_once 'MT/Object.php';
+require_once 'SubRosa/MT/Object.php';
 /**
 * MT_Log - Activity log object for the dynamic publishing engine
 */
-class MT_Object_Log extends MT_Object
+class SubRosa_MT_Object_Log extends SubRosa_MT_Object
 {
 
     var $class_prefix = 'log';
