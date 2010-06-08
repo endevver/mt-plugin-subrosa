@@ -985,11 +985,11 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
 
     function mtlog($msg) {
         $this->marker();
-        require_once('lib/MTLog.php');
+        require_once('MT/Object/Log.php');
         if (is_array($msg)) {
-            $log = new MTLog($msg);
+            $log = new MT_Log($msg);
         } else {
-            $log = new MTLog();
+            $log = new MT_Log();
             $log->set('message', $msg);
         }
         $log->save();
