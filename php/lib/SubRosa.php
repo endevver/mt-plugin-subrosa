@@ -1,9 +1,31 @@
 <?php
 
+/* ************************************************************************
+
+    o the iMIS piece is coming together, thank god. That means I finally have profile data I am beginning to work with. So I wanted to share with you the key pieces of custom field data that the privacy component will hinge upon.
+
+    1) Member Status
+
+    This is an enumeration of strings with a number of valid values including: Active Member,Denied or Suspended,Complimentary,Marked for Deletion,Inactive Member,Not Applicable,Prospect Member,Expired Member,Salesforce Insert,Declined Membership,Unknown
+
+    A value of "Active Member" is what allows them to view protected content.
+
+    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_status');
+
+    2) Member Type
+
+    Also an enumeration with values including: Charter School,Charter Support,Developer,Employee,Found. Funder,Government Agency,Individual Contact,ListServ,Member,Media,Other Non Member,Non_Member_Org,Public User,SELPA,Salesforce Co,Vendor,Web Sign-Up
+
+    Any value allows them to see content, however a value of 'Vendor' may have some special cases.
+
+    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_type');
+
+************************************************************************ */
+
+
+
 // === TextMate error handling ===
-
 // @include_once '/Library/Application Support/TextMate/Bundles/PHP.tmbundle/Support/textmate.php';
-
 
 // Even when display_errors is on, errors that occur
 // during PHP's startup sequence are not displayed.
@@ -16,7 +38,7 @@ ini_set('display_startup_errors', true); // off
 //  Note: Although display_errors may be set at runtime (with ini_set()), it //
 //  won't have any affect if the script has fatal errors. This is because the
 //  desired runtime action does not get executed.
-ini_set('display_errors', false); // off
+ini_set('display_errors', true); // off
 
 // Tells whether script error messages should be logged to
 // the server's error log or error_log. This option is thus
@@ -24,25 +46,35 @@ ini_set('display_errors', false); // off
 ini_set('log_errors', true);           // on
 
 //Name of the file where script errors should be logged.
-//ini_set('error_log', 1);            //NULL
-//ini_set('error_log', '/home/tdi/JAY/boo-php.log');            //NULL
+//ini_set('error_log', 1);                              //NULL
+//ini_set('error_log', '/home/tdi/JAY/boo-php.log');    //NULL
+
+$ds = DIRECTORY_SEPARATOR;
 
 // Set up the base include paths to the main MT PHP directory.
-$base_dir = dirname(__FILE__);
-$base_dir = preg_replace('/svn\/tdi_private/', 'Sites/tdi.local/extranet/cgi/mt/plugins', $base_dir);
+$base_libdir = dirname(__FILE__);
+$mt_libdir = join( $ds, array( $cfg['mt_dir'], 'php', 'lib' ));
 
 // TODO: Make include path Windows-safe with semi-colons
+// print "<p>base_libdir: $base_libdir</p>";
+// print '<pre>';
+// print_r($cfg);
+// print '</pre>';
+
 $include_path = 
     join(':', array(
         ini_get('include_path'),
-        $base_dir,
-        '.',
-        dirname(dirname(dirname($base_dir))).'/php'));
+        $base_libdir,   // lib
+        join( $ds, array(dirname($base_libdir), 'extlib')),
+        $mt_libdir,    // lib
+        join( $ds, array(dirname($mt_libdir), 'extlib')),
+        '.'));
+// print "<p>include_path: $include_path</p>";
 ini_set('include_path', $include_path);
 
 // Include the main MT dynamic libraries if they are not already
 // so that we can extend the class...
-require_once("mt.php");
+require_once(dirname($mt_libdir) . $ds . "mt.php");
 
 /**
 * MT-SubRosa
@@ -130,7 +162,7 @@ class SubRosa extends MT
     function init_logger() {
         if (isset($this->logger)) return;
         require_once('SubRosa/Logger.php');
-        $this->logger = new Logger($this->log_output);
+        $this->logger = new SubRosa_Logger($this->log_output);
     }
 
     function init_plugins() {
@@ -159,8 +191,8 @@ class SubRosa extends MT
     //             functionality of but do not fit one of the above.
     //
     function init_subrosa_plugins() {
-        global $base_dir;
-        $plugin_dir = $base_dir . DIRECTORY_SEPARATOR . 'plugins';
+        global $base_libdir;
+        $plugin_dir = $base_libdir . DIRECTORY_SEPARATOR . 'plugins';
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
 
         if ( isset( $_SERVER['SUBROSA_POLICY'] ) ) {
@@ -205,6 +237,21 @@ class SubRosa extends MT
         }
 
     }
+
+    function bootstrap() {
+        $this->marker('Bootstrapping SubRosa');
+
+    }
+
+
+
+
+
+
+
+
+
+
 
     /* *********************************************************************
      *  VIEWER METHODS

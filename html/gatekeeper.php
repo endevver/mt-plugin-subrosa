@@ -14,7 +14,7 @@
 
 $cfg = init_subrosa_config();
 
-require( $cfg['mt_dir'] . "/". $cfg['subrosa_path'] );
+require( $cfg['mt_dir'] . DIRECTORY_SEPARATOR . $cfg['subrosa_path'] );
 
 $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
@@ -37,7 +37,7 @@ function init_subrosa_config() {
         $cfg['site_path'] = $_SERVER['DOCUMENT_ROOT'];
 
     if ( ! isset( $cfg['subrosa_path'] ))
-        $cfg['subrosa_path'] = 'plugins/SubRosa/php/SubRosa.class';
+        $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
 
     if ( ! isset( $cfg['mt_dir'] ))
         $cfg['mt_dir'] = $_SERVER['MT_HOME'];
