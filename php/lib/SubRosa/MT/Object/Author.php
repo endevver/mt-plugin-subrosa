@@ -1,7 +1,7 @@
 <?php
 require_once 'SubRosa/MT/Object.php';
 /**
-* MTAuthor - Author object for dynamic MT
+* SubRosa_MT_Object_Author - Author object for dynamic MT
 */
 class SubRosa_MT_Object_Author extends SubRosa_MT_Object
 {
@@ -30,7 +30,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
         global $mt;
         if ($results = $mt->db->load('author', $terms)) {
             foreach ($results as $data) {
-                $object = new MTAuthor($data);
+                $object = new SubRosa_MT_Object_Author($data);
                 $objects[] = $object;
             }
             return (count($objects) == 1) ? $objects[0] : $objects;
@@ -98,7 +98,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
                     $user =& $this->mt->auth->user();
                     $session =& $this->mt->auth->session();
                 } else {
-                    return $ctx->error('MTAuth object not set in has_perms()');
+                    return $ctx->error('SubRosa_MT_Auth object not set in has_perms()');
                 }
 
                 if (isset($user) and isset($session)) {

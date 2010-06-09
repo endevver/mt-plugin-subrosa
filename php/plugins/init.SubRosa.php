@@ -89,7 +89,7 @@ function subrosa_user_lookup($ctx, $var) {
     }
     else {
         return $ctx->error(
-            'MTAuth object not set in subrosa_user_lookup');
+            'SubRosa_MT_Auth object not set in subrosa_user_lookup');
     }
     if (isset($user)) return $user->get($var);
 }
@@ -109,7 +109,7 @@ function user_is_authorized($ctx, $blog_id=null) {
         }
         else {
             return $ctx->error(
-                'MTAuth object not set in init.SubRosa.php user_is_authorized()');
+                'SubRosa_MT_Auth object not set in init.SubRosa.php user_is_authorized()');
         }
     }
     return $authorized;
@@ -149,7 +149,7 @@ function smarty_function_MTSubRosaUserProfileURL($args, &$ctx)
     }
     else {
         return $ctx->error(
-            'MTAuth object not set in MTSubRosaUserProfileURL');
+            'SubRosa_MT_Auth object not set in MTSubRosaUserProfileURL');
     }
     if (isset($user)) {
         $user_id = $user->get('id');

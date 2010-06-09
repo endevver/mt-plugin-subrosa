@@ -40,8 +40,8 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
         $this->mt->marker();
         $userid = $this->get('userid');
         if (!$userid) return;
-        $this->log("Loading user $userid from MTAuthor");
-        $user = MTAuthor::load($userid);
+        $this->log("Loading user $userid from SubRosa_MT_Object_Author");
+        $user = SubRosa_MT_Object_Author::load($userid);
         return $user;
     }
     
@@ -54,7 +54,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
             }
             else {
                 return $ctx->error(
-                    'MTAuth object not set in MTSession::create()');
+                    'SubRosa_MT_Auth object not set in MTSession::create()');
             }
         }
 
@@ -78,7 +78,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
         }
         else {
             return $ctx->error(
-                'MTAuth object not set in MTSession::save()');
+                'SubRosa_MT_Auth object not set in MTSession::save()');
         }
 
         if (empty($user)) return;

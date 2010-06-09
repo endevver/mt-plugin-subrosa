@@ -574,7 +574,7 @@ class SubRosa extends MT
         // Look up the user in the database by username and password
         // and start a session if found.
         require_once('SubRosa/MT/Auth.php');
-        $auth = new MTAuth($_POST['username'], $_POST['password']);
+        $auth = new SubRosa_MT_Auth($_POST['username'], $_POST['password']);
         $this->auth =& $auth;
         $user = $auth->login();
 
@@ -624,7 +624,7 @@ class SubRosa extends MT
         $this->marker();
         
         require_once('SubRosa/MT/Auth.php');
-        $auth = new MTAuth();
+        $auth = new SubRosa_MT_Auth();
         $this->auth =& $auth;
         $auth->init();
         
@@ -667,7 +667,7 @@ class SubRosa extends MT
         $this->marker();
 
         require_once('SubRosa/MT/Auth.php');
-        $auth = new MTAuth();
+        $auth = new SubRosa_MT_Auth();
         $this->auth =& $auth;
         $auth->init();
         

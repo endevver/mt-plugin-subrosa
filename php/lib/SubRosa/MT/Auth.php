@@ -3,7 +3,7 @@ require_once 'SubRosa/MT/Object/Author.php';
 require_once 'SubRosa/MT/Object/Session.php';
 
 /**
-* MTAuth - handles authentication for dynamic MT
+* SubRosa_MT_Auth - handles authentication for dynamic MT
 */
 class SubRosa_MT_Auth
 {
@@ -43,7 +43,7 @@ class SubRosa_MT_Auth
         if (    ($cname == $phpname)
             and ($csid == $phpsid)) {
             $this->log('PHP session data matches cookie');
-            $user = MTAuthor::load(array('name' => $cname));
+            $user = SubRosa_MT_Object_Author::load(array('name' => $cname));
             if (is_object($user)) $this->user($user);
             $session = MTSession::load($csid);
             if (is_object($session)) $this->session($session);
@@ -82,13 +82,13 @@ class SubRosa_MT_Auth
 
         if (is_null($data) and $this->no_auth_info) return;
         
-        $this->mt->marker('Initializing MTAuth user');
+        $this->mt->marker('Initializing SubRosa_MT_Auth user');
 
         if (isset($data) and is_object($data)) {
             $user = $data;
         }
         elseif (isset($data)) {
-            $user = new MTAuthor($data);
+            $user = new SubRosa_MT_Object_Author($data);
         }
 
         if (isset($user) and is_object($user)) {
@@ -109,7 +109,7 @@ class SubRosa_MT_Auth
 
         if (is_null($data) and $this->no_auth_info) return;
 
-        $this->mt->marker('Initializing MTAuth session');
+        $this->mt->marker('Initializing SubRosa_MT_Auth session');
 
         if (isset($data) and is_object($data)) {
             $session = $data;
@@ -190,13 +190,13 @@ class SubRosa_MT_Auth
         if (empty($name) || empty($pass)) return false;
 
         // Load user by username, return if none found
-        $user = MTAuthor::load(array('name' => $name));
+        $user = SubRosa_MT_Object_Author::load(array('name' => $name));
         if (! is_object($user)) {
             require_once('SubRosa/MT/Object/Log.php');
             $msg = sprintf("Failed login attempt by unknown user '%s'.", $name);
             $this->mt->mtlog(
                 array('message' => $msg, 'level' => MT_Log::level('WARNING')));
-            $this->log("$msg No user object returned from MTAuthor::load");
+            $this->log("$msg No user object returned from SubRosa_MT_Object_Author::load");
             $this->mt->log_dump();
             return;            
         }
