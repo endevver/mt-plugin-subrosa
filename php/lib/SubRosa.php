@@ -51,6 +51,7 @@ ini_set('include_path', $include_path);
 // not already so that we can extend the MT class...
 require_once( SubRosa_Util::os_path( dirname( $mt_libdir ), 'mt.php' ));
 
+require_once('log4php/Logger.php');
 
 /**
 * MT-SubRosa
