@@ -4,7 +4,7 @@
 *                     resources to only authors on that blog.
 */
 class Policy_BlogAuthors extends SubRosa_PolicyAbstract {
-    
+
     public function is_protected  ( );
     public function login_page    ( $params            );
     public function handle_login  ( $fileinfo          );

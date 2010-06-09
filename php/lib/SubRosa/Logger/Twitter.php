@@ -4,7 +4,7 @@
 * SubRosa_Logger_Twitter - A logging class for SubRosa
 
 *
-*    $this->logger = new Logger('screen');
+*    $this->logger = new SubRosa_Logger('screen');
 *    $this->screen = $logger->screen
 *
 

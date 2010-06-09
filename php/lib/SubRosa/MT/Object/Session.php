@@ -25,7 +25,8 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
         if ($results = $mt->db->load('session', $terms)) {
 
             foreach ($results as $data) {
-                $sessdata = unpack_session_data($data['session_data']);
+                $sessdata
+                   = SubRosa_Util::unpack_session_data($data['session_data']);
                 $object = new MTSession(array(
                     id => $data['session_id'],
                     userid => $sessdata['author_id']));
@@ -94,7 +95,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
 
         // Compile session row data, serializing the session_data field
         require_once('SubRosa/Util.php');
-        $session_id = magic_token();
+        $session_id = SubRosa_Util::magic_token();
         $time = time();
         $data = $mtdb->serializer->serialize(
                 array('author_id' => $user->get('id')));

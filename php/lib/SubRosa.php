@@ -1,31 +1,7 @@
 <?php
 
-/* ************************************************************************
-
-    o the iMIS piece is coming together, thank god. That means I finally have profile data I am beginning to work with. So I wanted to share with you the key pieces of custom field data that the privacy component will hinge upon.
-
-    1) Member Status
-
-    This is an enumeration of strings with a number of valid values including: Active Member,Denied or Suspended,Complimentary,Marked for Deletion,Inactive Member,Not Applicable,Prospect Member,Expired Member,Salesforce Insert,Declined Membership,Unknown
-
-    A value of "Active Member" is what allows them to view protected content.
-
-    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_status');
-
-    2) Member Type
-
-    Also an enumeration with values including: Charter School,Charter Support,Developer,Employee,Found. Funder,Government Agency,Individual Contact,ListServ,Member,Media,Other Non Member,Non_Member_Org,Public User,SELPA,Salesforce Co,Vendor,Web Sign-Up
-
-    Any value allows them to see content, however a value of 'Vendor' may have some special cases.
-
-    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_type');
-
-************************************************************************ */
-
-
-
 // === TextMate error handling ===
-// @include_once '/Library/Application Support/TextMate/Bundles/PHP.tmbundle/Support/textmate.php';
+include_once '/Applications/TextMate.app/Contents/SharedSupport/Bundles/PHP.tmbundle/Support/textmate.php';
 
 // Even when display_errors is on, errors that occur
 // during PHP's startup sequence are not displayed.
@@ -45,36 +21,36 @@ ini_set('display_errors', true); // off
 // server-specific.
 ini_set('log_errors', true);           // on
 
+// Enabling this setting prevents attacks involved passing
+// session ids in URLs. Defaults to true in PHP 5.3.0
+ini_set('session.use_only_cookies', true); 
+
 //Name of the file where script errors should be logged.
 //ini_set('error_log', 1);                              //NULL
 //ini_set('error_log', '/home/tdi/JAY/boo-php.log');    //NULL
 
-$ds = DIRECTORY_SEPARATOR;
+require_once( 'SubRosa/Util.php' );
 
-// Set up the base include paths to the main MT PHP directory.
-$base_libdir = dirname(__FILE__);
-$mt_libdir = join( $ds, array( $cfg['mt_dir'], 'php', 'lib' ));
+// Derive the paths to the SubRosa and MT PHP libs directory
+$base_libdir = dirname( __FILE__ );
+$mt_libdir   = SubRosa_Util::os_path( $cfg['mt_dir'], 'php', 'lib' );
 
-// TODO: Make include path Windows-safe with semi-colons
-// print "<p>base_libdir: $base_libdir</p>";
-// print '<pre>';
-// print_r($cfg);
-// print '</pre>';
-
-$include_path = 
-    join(':', array(
-        ini_get('include_path'),
-        $base_libdir,   // lib
-        join( $ds, array(dirname($base_libdir), 'extlib')),
-        $mt_libdir,    // lib
-        join( $ds, array(dirname($mt_libdir), 'extlib')),
-        '.'));
+// include_path: Prepend SubRosa and MT PHP lib and extlib directories
+$include_path = join( ':',
+    array(
+        $base_libdir,                                 // Our lib
+        str_replace( 'lib', 'extlib', $base_libdir ), 
+        $mt_libdir,                                   // MT lib
+        str_replace( 'lib', 'extlib', $mt_libdir ),   
+        ini_get('include_path'),                      // Current value
+    ));
 // print "<p>include_path: $include_path</p>";
 ini_set('include_path', $include_path);
 
-// Include the main MT dynamic libraries if they are not already
-// so that we can extend the class...
-require_once(dirname($mt_libdir) . $ds . "mt.php");
+// Include the main MT dynamic libraries if they are 
+// not already so that we can extend the MT class...
+require_once( SubRosa_Util::os_path( dirname( $mt_libdir ), 'mt.php' ));
+
 
 /**
 * MT-SubRosa
@@ -108,7 +84,8 @@ class SubRosa extends MT
         $this->notify_pass        = $subrosa_config['notify_pass'];
 
         $this->init_logger();
-        $this->marker('Initializing SubRosa class for request to '.$_SERVER['SCRIPT_URL']);
+        $this->marker('Initializing SubRosa class for request to '
+                      .$_SERVER['SCRIPT_URL']);
 
         if ($this->debugging) {
             $this->log('Debugging is on');
@@ -135,7 +112,7 @@ class SubRosa extends MT
         date_default_timezone_set('America/Los_Angeles');
 
         $this->template_dir
-            = SubRosa_Util::os_path(dirname(__FILE__),'/tmpl');
+            = SubRosa_Util::os_path( dirname(__FILE__), '/tmpl' );
         $this->template['debug'] = 'debug-jay.tpl';
         $this->template['login'] = 'login.tpl';
 
@@ -161,9 +138,12 @@ class SubRosa extends MT
     }
 
     function init_logger() {
+        print '<pre>';
+        print_r($this->logger);
+        print '</pre>';
         if (isset($this->logger)) return;
         require_once('SubRosa/Logger.php');
-        $this->logger = new SubRosa_Logger($this->log_output);
+        $this->logger = new SubRosa_Logger( $this->log_output );
     }
 
     function init_plugins() {
@@ -193,7 +173,7 @@ class SubRosa extends MT
     //
     function init_subrosa_plugins() {
         global $base_libdir;
-        $plugin_dir = $base_libdir . DIRECTORY_SEPARATOR . 'plugins';
+        $plugin_dir = SubRosa_Util::os_path( $base_libdir, 'plugins' );
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
 
         if ( isset( $_SERVER['SUBROSA_POLICY'] ) ) {
@@ -242,6 +222,12 @@ class SubRosa extends MT
     function bootstrap() {
         $this->marker('Bootstrapping SubRosa');
 
+        //kill_php_current_session();
+        // show_current_request_info();
+
+        session_name('SubRosa');
+        session_start();
+
     }
 
 
@@ -268,8 +254,7 @@ class SubRosa extends MT
 
         $ctx =& $this->context();
         $ctx->template_dir
-            = $this->config['PHPDir'] . DIRECTORY_SEPARATOR . 'tmpl';
-
+            = SubRosa_Util::os_path( $this->config['PHPDir'], 'tmpl' );
         $ctx->stash('plugin_template_dir',  $this->template_dir);
         $ctx->stash('mt_template_dir',      $ctx->template_dir);
 
@@ -627,7 +612,7 @@ class SubRosa extends MT
             // to the page they were trying to access. A redirect is 
             // necessary to get the cookie values to take hold.
             else {
-                $out = $this->redirect(self_url());
+                $out = $this->redirect(SubRosa_Util::self_url());
             }
             $this->log('Login successful, redirecting to '.$this->redirect());
         }
@@ -696,7 +681,7 @@ class SubRosa extends MT
             $blog = $this->blog();
             $url = $blog['blog_site_url'];
         } else {
-            $url = self_url();
+            $url = SubRosa_Util::self_url();
         }
         return $this->redirect($url.'?__mode=logout');
     }
@@ -800,7 +785,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             $ctx->stash('http_error', $http_error);
             $ctx->stash('error_file', $errfile);
             $ctx->stash('error_line', $errline);
-            $ctx->template_dir = $mtphpdir . DIRECTORY_SEPARATOR . 'tmpl';
+            $ctx->template_dir = SubRosa_Util::os_path( $mtphpdir, 'tmpl' );
             $ctx->caching = 0;
             $ctx->stash('StaticWebPath', $this->config['StaticWebPath']);
             $ctx->stash('PublishCharset', $this->config['PublishCharset']);
@@ -1119,5 +1104,8 @@ echo "select sid, cookie, authenticated, last_visit, time from session join auth
 open -a Firefox "http://localhost/jay.php?c=$MAGIC"
  
  */
+
+ // textmate_backtrace();
+ // die("Exiting at ". __FILE__ . ', line ' .__LINE__);
 
 ?>

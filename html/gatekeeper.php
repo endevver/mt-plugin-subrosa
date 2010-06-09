@@ -14,22 +14,15 @@
 
 $cfg = init_subrosa_config();
 
-require( $cfg['mt_dir'] . DIRECTORY_SEPARATOR . $cfg['subrosa_path'] );
+require_once( $cfg['subrosa_path'] );
 
-$mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
-
+$mt = new SubRosa( $cfg['mt_cfg'], $_GET['blog_id'] );
+$mt->debugging = true;
 $mt->bootstrap();
 
 
 function init_subrosa_config() {
     
-    //kill_php_current_session();
-    // show_current_request_info();
-
-    ini_set('session.use_only_cookies', true); 
-    session_name('SubRosa');
-    session_start();
-
     require('subrosa_config.php');
     $cfg =& $config;
 
@@ -45,9 +38,13 @@ function init_subrosa_config() {
     if ( ! isset( $cfg['mt_dir'] ))
         die ("Cannot locate MT_HOME at " . __FILE__ . ", line " . __LINE__);
 
+    $cfg['mt_cfg'] = $cfg['mt_dir'] . DIRECTORY_SEPARATOR . 'mt-config.cgi';
+
+    # Append mt_dir to subrosa_path to create an absolute filepath
+    $cfg['subrosa_path'] = $cfg['mt_dir'] 
+                         . DIRECTORY_SEPARATOR 
+                         . $cfg['subrosa_path'];
     return $cfg;
 }
-
-
 
 ?>
