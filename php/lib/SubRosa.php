@@ -170,18 +170,15 @@ class SubRosa extends MT
     //
     function init_subrosa_plugins() {
         global $base_libdir;
-        $plugin_dir = SubRosa_Util::os_path( $base_libdir, 'plugins' );
+        $plugin_dir = SubRosa_Util::os_path( 
+                          dirname($base_libdir), 'plugins'
+                      );
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
 
         if ( isset( $_SERVER['SUBROSA_POLICY'] ) ) {
             $request_policy = strtolower( $_SERVER['SUBROSA_POLICY'] );
         }
-print_r(
-    array(
-        server_subrosa_policy => $_SERVER['SUBROSA_POLICY'],
-        subrosa_policy => SUBROSA_POLICY,
-        
-));
+
         if (is_dir($plugin_dir) and ($dh = opendir($plugin_dir))) {
             while (($file = readdir($dh)) !== false) {
 
@@ -206,9 +203,6 @@ print_r(
             }
             closedir($dh);
         }
-        
-        printf( '<p>SUBROSA_POLICY: %s, request_policy: %s</p>',
-                 SUBROSA_POLICY, $request_policy );
 
         // Check that any requested policy was properly loaded. 
         // The PHP constant SUBROSA_POLICY should be defined in 
@@ -245,7 +239,15 @@ print_r(
 
         $this->init_plugins();
 
-        $this->log_dump(array(noscreen => 1));
+        $sess_key = $mt->user_session_key;
+
+        $policy_class = SUBROSA_POLICY;
+        $policy       = new $policy_class();
+        if ( ! $policy->is_protected( $_SERVER['REQUEST_URI'] ) ) {
+            $this->log_dump(array(noscreen => 1));
+            return;
+        }
+        
 
     }
 

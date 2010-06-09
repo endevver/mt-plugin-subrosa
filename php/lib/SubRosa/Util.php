@@ -49,7 +49,7 @@ class SubRosa_Util
         $mt->marker();
         $mtdb =& $mt->db;
         if (!$mtdb->serializer) {
-            require_once($mt->config['PHPLibDir'].'/MTSerialize.php');
+            require_once($mt->config['phplibdir'].'/MTSerialize.php');
             $serializer = new MTSerialize();
             $mtdb->serializer =& $serializer;
         }

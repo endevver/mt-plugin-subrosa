@@ -56,7 +56,7 @@ class SubRosa_MT_Auth
             // If we have a user cookie, load data from there.
             if (isset($cname) and isset($csid)) {
                 $this->log('Initializing PHP session from cookie');
-                $session = MTSession::load($csid);
+                $session = SubRosa_MT_Object_Session::load($csid);
                 if (is_object($session)) {
                     $this->log('We loaded the session object');
                     $this->session($session);
