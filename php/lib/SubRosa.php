@@ -239,8 +239,6 @@ class SubRosa extends MT
 
         $this->init_plugins();
 
-        $sess_key = $mt->user_session_key;
-
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
         if ( ! $policy->is_protected( $_SERVER['REQUEST_URI'] ) ) {

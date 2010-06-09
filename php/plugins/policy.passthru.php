@@ -27,13 +27,22 @@ class Policy_Passthru extends SubRosa_PolicyAbstract {
         $mt->log('$user_hash: '.print_r( $user_hash, true ));
         $mt->log('$meta: '.print_r( $meta, true ));
 
-        $mt->log_dump(array(noscreen => 1));
-        
-        # Used array union operator to merge $user_hash and 
-        # $meta while favoring the former if any keys conflict.
-        foreach (( $user_hash + $meta ) as $key => $val ) {
+        $keys = array_merge( array_keys( $user_hash ),
+                             array_keys( $meta )      );
+
+        foreach ( $keys as $key ) {
+            if ( isset( $user_hash[$key] )) {
+                $val = $user_hash[$key];
+            }
+            elseif ( isset( $meta[$key] )) {
+                $val = $meta[$key];
+            }
+            else {
+                $val = '';
+            }
             SubRosa_Util::phpsession( $key, $val );
         }
+        $mt->log_dump(array(noscreen => 1));
         $this->initialized = 1;
     }
 
