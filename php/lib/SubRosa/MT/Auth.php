@@ -45,7 +45,7 @@ class SubRosa_MT_Auth
             $this->log('PHP session data matches cookie');
             $user = SubRosa_MT_Object_Author::load(array('name' => $cname));
             if (is_object($user)) $this->user($user);
-            $session = MTSession::load($csid);
+            $session = SubRosa_MT_Object_Session::load($csid);
             if (is_object($session)) $this->session($session);
         }
         else {
@@ -66,7 +66,7 @@ class SubRosa_MT_Auth
                         $this->user($user);
                     } else {
                         $this->mt->log_dump();
-                        die ('No user object returned from MTSession::user');
+                        die ('No user object returned from SubRosa_MT_Object_Session->user()');
                     }
                 }
             }    
@@ -115,7 +115,7 @@ class SubRosa_MT_Auth
             $session = $data;
         }
         elseif (isset($data)) {
-            $session = new MTSession($data);
+            $session = new SubRosa_MT_Object_Session($data);
         }
 
         if (isset($session) and is_object($session)) {
@@ -241,7 +241,7 @@ class SubRosa_MT_Auth
 
     function has_active_session() {
         $this->mt->marker();
-        $session = new MTSession();
+        $session = new SubRosa_MT_Object_Session();
         return $session->session_user();
     }
 
