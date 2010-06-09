@@ -112,9 +112,12 @@ class SubRosa extends MT
         date_default_timezone_set('America/Los_Angeles');
 
         $this->template_dir
-            = SubRosa_Util::os_path( dirname(__FILE__), '/tmpl' );
+            = SubRosa_Util::os_path( dirname($base_libdir), '/tmpl' );
         $this->template['debug'] = 'debug-jay.tpl';
         $this->template['login'] = 'login.tpl';
+
+        $this->init_plugins();
+
 
         // Set up custom pages
         // URGENT: Default site root is not the correct site root.
@@ -138,9 +141,6 @@ class SubRosa extends MT
     }
 
     function init_logger() {
-        print '<pre>';
-        print_r($this->logger);
-        print '</pre>';
         if (isset($this->logger)) return;
         require_once('SubRosa/Logger.php');
         $this->logger = new SubRosa_Logger( $this->log_output );
@@ -227,6 +227,7 @@ class SubRosa extends MT
 
         session_name('SubRosa');
         session_start();
+        $this->log_dump(array(noscreen => 1));
 
     }
 
@@ -257,8 +258,6 @@ class SubRosa extends MT
             = SubRosa_Util::os_path( $this->config['PHPDir'], 'tmpl' );
         $ctx->stash('plugin_template_dir',  $this->template_dir);
         $ctx->stash('mt_template_dir',      $ctx->template_dir);
-
-        $this->init_plugins();
 
         // Set up Smarty defaults
         $ctx->caching = $this->caching;

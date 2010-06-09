@@ -12,7 +12,8 @@
 //    * Deny the request outright, with an optional error page.
 //    * Modify the request with a redirect (e.g. to a login page)
 
-$cfg = init_subrosa_config();
+$subrosa_config = init_subrosa_config();
+$cfg =& $subrosa_config;
 
 require_once( $cfg['subrosa_path'] );
 
