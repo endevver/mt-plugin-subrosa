@@ -965,45 +965,16 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
     }
     
 
-    function run_callbacks($cb_sig) {
-
-        $this->marker();
-
-        // Get the rest of the function arguments and go to town...
-
-        // See if there are any plugins registered for the hookpoint:
-        //      If not, return now.
-        // Cycle through the array of the coderefs that are registered
-        //      Execute each
-        //      Keep track of cb->errstr's
-        //      Otherwise ignore the return values
-        //  After all are done, report (activity log?) on the errors    
-
-        /*
-          OTHER MT CALLBACK ROUTINES 
-
-            MT->register_callbacks([...])
-            MT->add_callback($meth, $priority, $plugin, $code)
-            MT->remove_callback($callback)
-            MT->register_callbacks([...])
-            MT->run_callbacks($meth[, $arg1, $arg2, ...])
-            MT->run_callback($cb[, $arg1, $arg2, ...])
-            callback_error($str)
-            callback_errstr        
-        */
-
-    }
-
     function blog() {
         $ctx =& $this->context();
         $blog =& $ctx->stash('blog');
         if (!$blog) {
-            $db =& $this->db();
+            $db          =& $this->db();
             $ctx->mt->db =& $db;
-            $blog =& $db->fetch_blog($this->blog_id);
-            $ctx->stash('blog', $blog);
-            $ctx->stash('blog_id', $this->blog_id);
-            $this->configure_paths($blog['blog_site_path']);
+            $blog        =& $db->fetch_blog($this->blog_id);
+            $ctx->stash( 'blog', $blog );
+            $ctx->stash( 'blog_id', $this->blog_id );
+            $this->configure_paths( $blog['blog_site_path'] );
         }
         return $blog;
     }
