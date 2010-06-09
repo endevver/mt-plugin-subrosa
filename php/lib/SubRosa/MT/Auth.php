@@ -30,7 +30,7 @@ class SubRosa_MT_Auth
         $phpsid = SubRosa_Util::phpsession('session_id');
 
         // Get MT cookie information
-        list($cname, $csid, $cpersist) = $this->mt->user_cookie();
+        list($cname, $csid, $cpersist) = SubRosa_Util::get_user_cookie();
         if ($cname) $this->log("Found cookie for $cname with session $csid");
 
         if (empty($phpname) and empty($cname)) {

@@ -63,12 +63,45 @@ class SubRosa_Util
         }
     }
 
-    function cookie($var=null) {
-        if (isset($var)) {
-            return self::hashval($var, $_COOKIE);
-        } else {
-            return $_COOKIE;
+    function is_authorized($url) {
+        // print "<p>Here in is_authorized</p>";
+        list($cuser, $csid, $cpersist) = self::get_user_cookie();
+        // print "<p style='text-align: left'><pre style='text-align: left'>";
+        // print_r(Array(cuser => $cuser, csid => $csid, cpersist => $cpersist, SESSION => $_SESSION));
+        // print "</pre></p>";
+        if ($cuser and $csid and $_SESSION['current_user']) {
+            // print "<p>we have cookie and current session</p>";
+            error_log('We have cookie and PHP session');
+            $phpname = $_SESSION['current_user']['name'];
+            $phpid = $_SESSION['current_user']['id'];
+            $phpsid = $_SESSION['current_user']['session_id'];
+            if ($phpid and ($cuser == $phpname) and ($csid == $phpsid)) {
+                // print '<p>Cookie and PHP session match</p>';
+                error_log('Cookie and PHP session match');
+                if ($url == '/') return true;
+
+                global $subrosa_config;
+                $blog_path_cfg = $subrosa_config['blog_path'];
+                foreach ($blog_path_cfg as $path => $userarray) {
+                    // print "<p>Matching $path with ".$_SERVER['SCRIPT_URL'].'</p>';
+                    error_log("Matching $path with ".$_SERVER['SCRIPT_URL']);
+                    if (strpos($_SERVER['SCRIPT_URL'], $path) == 0) {
+                        // print "<p>We have a match, checking for user ID $phpid in array</p>";
+                        error_log("We have a match, checking for user ID $phpid in array");
+                        return in_array($phpid, $blog_path_cfg[$path]);
+                    }
+                }
+            }
         }
+    }
+
+    function get_user_cookie( $cname='mt_user' ) {
+        $usercookie = self::hashval($cname, $_COOKIE);
+        if ($usercookie) {
+            $parts = explode('::', $usercookie);
+            return $parts;
+        }
+        return array(null, null, null);
     }
 
     function sysdebug() {

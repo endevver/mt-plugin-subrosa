@@ -116,9 +116,6 @@ class SubRosa extends MT
         $this->template['debug'] = 'debug-jay.tpl';
         $this->template['login'] = 'login.tpl';
 
-        $this->init_plugins();
-
-
         // Set up custom pages
         // URGENT: Default site root is not the correct site root.
         // TODO: Should set site root in controller blog configuration
@@ -213,8 +210,9 @@ class SubRosa extends MT
             $this->policy = new $SUBROSA_POLICY();
         }
         elseif ( isset( $request_policy )) {
-            die ('ERROR: The requested SubRosa policy, '.SUBROSA_POLICY
-                .', could not be loaded');
+            die ( 'ERROR: The requested SubRosa policy, '
+                .  SUBROSA_POLICY
+                . ', could not be loaded');
         }
 
     }
@@ -227,6 +225,9 @@ class SubRosa extends MT
 
         session_name('SubRosa');
         session_start();
+
+        $this->init_plugins();
+
         $this->log_dump(array(noscreen => 1));
 
     }
@@ -1003,16 +1004,6 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             return $redirect_to;
         }
     }
-
-    function user_cookie() {
-        $usercookie = cookie($this->user_cookie);
-        if ($usercookie) {
-            $parts = explode('::', $usercookie);
-            return $parts;
-        }
-        return array(null, null, null);
-    }
-
 
     function errstr() { }
 

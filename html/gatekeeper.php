@@ -18,10 +18,6 @@ $cfg =& $subrosa_config;
 require_once( $cfg['subrosa_path'] );
 
 $mt = new SubRosa( $cfg['mt_cfg'], $_GET['blog_id'] );
-print 'After new SubRosa: <pre>';
-print_r($mt);
-print_r($GLOBALS);
-print '</pre>';
 $mt->debugging = true;
 $mt->bootstrap();
 

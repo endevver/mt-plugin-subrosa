@@ -1,11 +1,6 @@
 <?php
 
-// global $mt;
-print '<pre>HIYA!!!! ';
-print "mt: $mt";
-print_r($mt);
-print_r($GLOBALS);
-print '</pre>';
+global $mt;
 $ctx = &$mt->context();
 
 # Check to see we're disabled...

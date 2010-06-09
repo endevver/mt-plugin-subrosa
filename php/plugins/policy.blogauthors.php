@@ -23,6 +23,6 @@ class Policy_BlogAuthors extends SubRosa_PolicyAbstract {
 
 }
 
-define( 'SUBROSA_POLICY', 'PolicyBlogAuthors' );
+define( 'SUBROSA_POLICY', 'Policy_BlogAuthors' );
 
 ?>

@@ -104,18 +104,9 @@ class SubRosa_Viewer {
         }
     }
 
-    function get_user_cookie() {
-        if (array_key_exists('mt_user', $_COOKIE)) {
-            $usercookie = $_COOKIE['mt_user'];
-            $parts = explode('::', $usercookie);
-            return $parts;
-        }
-        return array(null, null, null);
-    }
-
     function is_authorized($url) {
         // print "<p>Here in is_authorized</p>";
-        list($cuser, $csid, $cpersist) = get_user_cookie();
+        list($cuser, $csid, $cpersist) = SubRosa_Util::get_user_cookie();
         // print "<p style='text-align: left'><pre style='text-align: left'>";
         // print_r(Array(cuser => $cuser, csid => $csid, cpersist => $cpersist, SESSION => $_SESSION));
         // print "</pre></p>";
