@@ -220,11 +220,39 @@ class SubRosa extends MT
     }
 
     function init_auth() {
+        if ( $this->auth ) return;
         $this->marker('Initializing authentication');
+
+        # Load user and user meta data
         require_once('SubRosa/MT/Auth.php');
         $auth = new SubRosa_MT_Auth();
         $this->auth =& $auth;
         $auth->init();
+        $user      =& $auth->user();
+        $user_hash =  $user->property_hash();
+        $meta      =  $this->db->get_meta( 'author', $user->get( 'id' ));
+
+        $this->log('$user_hash: '.print_r( $user_hash, true ));
+        $this->log('$meta: '.print_r( $meta, true ));
+
+        # Merge user and user meta data and put into SESSION
+        # The merge method below ensures that all keys will be present
+        # even if their values are null.
+        $keys = array_merge(    array_keys( $user_hash ),
+                                array_keys( $meta )          );
+        foreach ( $keys as $key ) {
+            if ( isset( $user_hash[$key] )) {
+                $val = $user_hash[$key];
+            }
+            elseif ( isset( $meta[$key] )) {
+                $val = $meta[$key];
+            }
+            else {
+                $val = '';
+            }
+            SubRosa_Util::phpsession( $key, $val );
+        }
+        $this->log_dump(array(noscreen => 1));
         return $auth;
     }
 
