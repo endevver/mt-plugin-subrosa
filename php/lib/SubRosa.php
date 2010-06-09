@@ -109,7 +109,6 @@ class SubRosa extends MT
         parent::init($blog_id, $cfg_file);
         $this->log('Current blog ID: '.$this->blog_id);
 
-        require_once('SubRosa/Util.php');
         date_default_timezone_set('America/Los_Angeles');
 
         $this->template_dir
@@ -269,7 +268,6 @@ class SubRosa extends MT
 
         ob_start(); 
 
-        if ($this->debugging)  require_once("SubRosa/MT/Util.php");
         $this->marker('Initializing viewer');
 
         $ctx =& $this->context();
@@ -499,7 +497,6 @@ class SubRosa extends MT
                 $ctx->stash('archive_category', $archive_category);
             }
             if (isset($ts)) {
-                require_once("SubRosa/MT/Util.php");
                 if ($at == 'Yearly') {
                     $ts = substr($ts, 0, 4);
                 } elseif ($at == 'Monthly') {
