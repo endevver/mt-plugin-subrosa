@@ -18,7 +18,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
         'modified_on','modified_by','entry_prefs','status','external_id',
         'session_id');
 
-    function load() {
+    public static function load() {
         if ($fnargs = func_get_args()) {
             if (is_array($fnargs[0])) {
                 $terms = $fnargs[0];

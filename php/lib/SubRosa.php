@@ -176,7 +176,12 @@ class SubRosa extends MT
         if ( isset( $_SERVER['SUBROSA_POLICY'] ) ) {
             $request_policy = strtolower( $_SERVER['SUBROSA_POLICY'] );
         }
-
+print_r(
+    array(
+        server_subrosa_policy => $_SERVER['SUBROSA_POLICY'],
+        subrosa_policy => SUBROSA_POLICY,
+        
+));
         if (is_dir($plugin_dir) and ($dh = opendir($plugin_dir))) {
             while (($file = readdir($dh)) !== false) {
 
@@ -202,6 +207,9 @@ class SubRosa extends MT
             closedir($dh);
         }
         
+        printf( 'SUBROSA_POLICY: %s, request_policy: %s',
+                 SUBROSA_POLICY, $request_policy );
+
         // Check that any requested policy was properly loaded. 
         // The PHP constant SUBROSA_POLICY should be defined in 
         // the policy plugin file and contains the PHP class name.
