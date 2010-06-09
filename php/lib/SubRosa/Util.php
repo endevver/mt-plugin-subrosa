@@ -4,25 +4,25 @@
 */
 class SubRosa_Util
 {
-    // FIXME: Bubble some of these utility functions up to the gatekeeper page
     function phpsession($key=null, $val=null) {
         global $mt;
+        $sess_key = $mt->user_session_key;
         if (isset($key) and isset($val)) {
             if ($val === false) {
-                unset($_SESSION[$mt->user_session_key][$key]);
+                unset( $_SESSION[$sess_key][$key] );
             }
             else {
-                $_SESSION[$mt->user_session_key][$key] = $val;
+                $_SESSION[$sess_key][$key] = $val;
             }
         } elseif (isset($key)) {
             if ($key === false) {
-                unset($_SESSION[$mt->user_session_key]);
+                unset( $_SESSION[$sess_key] );
             }
             else {
-                return self::hashval($key, $_SESSION[$mt->user_session_key]);
+                return self::hashval( $key, $_SESSION[$sess_key]);
             }
         } else {
-            return self::hashval($mt->user_session_key, $_SESSION);
+            return self::hashval( $sess_key, $_SESSION );
         }
     }
 

@@ -9,7 +9,12 @@ class Policy_Passthru extends SubRosa_PolicyAbstract {
 
     public function is_authorized() {
         # Load user and meta and put into SESSION
-        
+        global $mt;
+        $auth = $mt->init_auth();
+        $user =& $auth->user();
+
+
+        return true;
     }
 
     public function login_page    ( $params            );

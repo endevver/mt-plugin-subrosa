@@ -27,7 +27,7 @@ class SubRosa_MT_Auth
 
         // Get PHP session information
         $phpname = SubRosa_Util::phpsession('name');
-        $phpsid = SubRosa_Util::phpsession('session_id');
+        $phpsid  = SubRosa_Util::phpsession('session_id');
 
         // Get MT cookie information
         list($cname, $csid, $cpersist) = SubRosa_Util::get_user_cookie();

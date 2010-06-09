@@ -217,6 +217,15 @@ class SubRosa extends MT
 
     }
 
+    function init_auth() {
+        $this->marker('Initializing authentication');
+        require_once('SubRosa/MT/Auth.php');
+        $auth = new SubRosa_MT_Auth();
+        $this->auth =& $auth;
+        $auth->init();
+        return $auth;
+    }
+
     function bootstrap() {
         $this->marker('Bootstrapping SubRosa');
 
