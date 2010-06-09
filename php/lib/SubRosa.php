@@ -207,7 +207,7 @@ print_r(
             closedir($dh);
         }
         
-        printf( 'SUBROSA_POLICY: %s, request_policy: %s',
+        printf( '<p>SUBROSA_POLICY: %s, request_policy: %s</p>',
                  SUBROSA_POLICY, $request_policy );
 
         // Check that any requested policy was properly loaded. 
