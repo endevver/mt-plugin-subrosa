@@ -119,7 +119,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
 
         // Create (and send) the user cookie
         $this->create_cookie($user->get('name'), $session_id);
-        
+
         $this->set('id', $session_id);
         SubRosa_Util::phpsession('session_id', $session_id);
 

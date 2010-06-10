@@ -7,15 +7,16 @@ require_once( 'SubRosa/PolicyAbstract.php' );
 */
 class Policy_Passthru extends SubRosa_PolicyAbstract {
 
-    public function is_protected()  {
+    function __construct() {
         global $mt;
-        $mt->get_auth();
+        $mt->init_auth();
+    }
+
+    public function is_protected()  {
         return false;
     }
 
     public function is_authorized() {
-        global $mt;
-        $mt->get_auth();
         return true;
     }
 

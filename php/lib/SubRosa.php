@@ -219,39 +219,15 @@ class SubRosa extends MT
 
     }
 
-    function init_auth() {
-        if ( $this->auth ) return;
+    function &init_auth($username=null, $password=null) {
+        if ( $this->auth ) return $this->auth;
         $this->marker('Initializing authentication');
 
         # Load user and user meta data
         require_once('SubRosa/MT/Auth.php');
-        $auth = new SubRosa_MT_Auth();
+        $auth = new SubRosa_MT_Auth( $username, $password );
         $this->auth =& $auth;
         $auth->init();
-        $user      =& $auth->user();
-        $user_hash =  $user->property_hash();
-        $meta      =  $this->db->get_meta( 'author', $user->get( 'id' ));
-
-        $this->log('$user_hash: '.print_r( $user_hash, true ));
-        $this->log('$meta: '.print_r( $meta, true ));
-
-        # Merge user and user meta data and put into SESSION
-        # The merge method below ensures that all keys will be present
-        # even if their values are null.
-        $keys = array_merge(    array_keys( $user_hash ),
-                                array_keys( $meta )          );
-        foreach ( $keys as $key ) {
-            if ( isset( $user_hash[$key] )) {
-                $val = $user_hash[$key];
-            }
-            elseif ( isset( $meta[$key] )) {
-                $val = $meta[$key];
-            }
-            else {
-                $val = '';
-            }
-            SubRosa_Util::phpsession( $key, $val );
-        }
         $this->log_dump(array(noscreen => 1));
         return $auth;
     }
@@ -616,9 +592,7 @@ class SubRosa extends MT
         
         // Look up the user in the database by username and password
         // and start a session if found.
-        require_once('SubRosa/MT/Auth.php');
-        $auth = new SubRosa_MT_Auth($_POST['username'], $_POST['password']);
-        $this->auth =& $auth;
+        $auth =& $this->init_auth( $_POST['username'], $_POST['password'] );
         $user = $auth->login();
 
         // Check for error conditions or a forced login and
@@ -665,11 +639,7 @@ class SubRosa extends MT
 
     function handle_auth($fileinfo = null) {
         $this->marker();
-        
-        require_once('SubRosa/MT/Auth.php');
-        $auth = new SubRosa_MT_Auth();
-        $this->auth =& $auth;
-        $auth->init();
+        $auth =& $this->init_auth();
         
         // If no active, valid session is found,
         // we give them the login page.
@@ -710,13 +680,9 @@ class SubRosa extends MT
         $this->marker();
 
         require_once('SubRosa/MT/Auth.php');
-        $auth = new SubRosa_MT_Auth();
-        $this->auth =& $auth;
-        $auth->init();
+        $auth =& $this->init_auth()
         
-        if ($auth->session()) {
-            $auth->logout();
-        }
+        if ($auth->session()) $auth->logout();
         
         // After logout, we redirect back to the main site_url
         // and display the login screen. Unless there's an error

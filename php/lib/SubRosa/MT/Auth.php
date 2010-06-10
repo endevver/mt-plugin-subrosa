@@ -92,9 +92,28 @@ class SubRosa_MT_Auth
         }
 
         if (isset($user) and is_object($user)) {
-            $hash = $user->property_hash();
-            foreach ($hash as $key => $val) {
-                SubRosa_Util::phpsession($key, $val);
+            $user_hash =  $user->property_hash();
+            $meta      =  $this->db->get_meta( 'author', $user->get( 'id' ));
+
+            $this->log('$user_hash: '.print_r( $user_hash, true ));
+            $this->log('$meta: '.print_r( $meta, true ));
+
+            # Merge user and user meta data and put into SESSION
+            # The merge method below ensures that all keys will be present
+            # even if their values are null.
+            $keys = array_merge(    array_keys( $user_hash ),
+                                    array_keys( $meta )          );
+            foreach ( $keys as $key ) {
+                if ( isset( $user_hash[$key] )) {
+                    $val = $user_hash[$key];
+                }
+                elseif ( isset( $meta[$key] )) {
+                    $val = $meta[$key];
+                }
+                else {
+                    $val = '';
+                }
+                SubRosa_Util::phpsession( $key, $val );
             }
             return $user;
         }
