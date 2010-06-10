@@ -4,6 +4,16 @@
 */
 class SubRosa_Util
 {
+    function document_root() {
+        if ( ! isset($_SERVER['DOCUMENT_ROOT'] )) {
+            $abs_filepath = $_SERVER['SCRIPT_FILENAME'];
+            $relative_uri = $_SERVER['PHP_SELF'];
+            $_SERVER['DOCUMENT_ROOT'] = str_replace( '\\', '/',
+                substr( $abs_filepath, 0, 0-strlen($relative_uri) ) );
+        }
+        return $_SERVER['DOCUMENT_ROOT'];
+    }
+
     function phpsession($key=null, $val=null) {
         global $mt;
         $sess_key = $mt->user_session_key;

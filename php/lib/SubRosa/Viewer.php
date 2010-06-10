@@ -1,4 +1,6 @@
 <?php
+require_once('SubRosa/Util.php');
+
 /**
 * SubRosa_Viewer - Our MTViewer stuff...
 */
@@ -6,20 +8,20 @@ class SubRosa_Viewer {
 
     $is_virtual_request = 0;
 
-    // Requests for directories and non-existent files are virtual and must be
-    // run through SubRosa.
+    // Requests for directories and non-existent files are virtual
+    // and must be run through SubRosa.
     global $is_virtual_request;
-    $req_path           = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_URL'];
+    $req_path           = SubRosa_Util::document_root()
+                        . $_SERVER['PHP_SELF'];
     $is_virtual_request = (   ! is_file( $req_path )
                         or ! file_exists( $req_path ) ) ? 1 : 0;
-
 
     if ( ! $mt->policy->is_protected() ) {
 
         if ( ! $mt->policy->resolve_dynamic || ! $is_virtual_request ) {
-            error_log($_SERVER['SCRIPT_URL'].': Serving request');
+            error_log($_SERVER['REQUEST_URI'].': Serving request');
             apache_setenv( 'SUBROSA_OK', 1 );
-            virtual( $_SERVER['SCRIPT_URL'] );
+            virtual( $_SERVER['REQUEST_URI'] );
         }
     }
 

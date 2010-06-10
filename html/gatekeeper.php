@@ -27,9 +27,6 @@ function init_subrosa_config() {
     require('subrosa_config.php');
     $cfg =& $config;
 
-    if ( ! isset( $cfg['site_path'] ))
-        $cfg['site_path'] = $_SERVER['DOCUMENT_ROOT'];
-
     if ( ! isset( $cfg['subrosa_path'] ))
         $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
 

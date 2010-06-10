@@ -119,6 +119,9 @@ class SubRosa extends MT
         // Set up custom pages
         // URGENT: Default site root is not the correct site root.
         // TODO: Should set site root in controller blog configuration
+        if ( ! isset( $this->site_path )) {
+            $this->site_path = SubRosa_Util::document_root();
+        }
         $site_root = $this->site_path;
         
         $this->log("Site root: $site_root");
@@ -266,7 +269,6 @@ SCRIPT_URL
         // 
         // if ( $policy->is_authorized() )
     }
-
 
 
 
