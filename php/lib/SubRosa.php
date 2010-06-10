@@ -678,8 +678,6 @@ class SubRosa extends MT
     */        
     function handle_logout($fileinfo = null) {
         $this->marker();
-
-        require_once('SubRosa/MT/Auth.php');
         $auth =& $this->init_auth()
         
         if ($auth->session()) $auth->logout();
