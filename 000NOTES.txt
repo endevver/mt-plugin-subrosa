@@ -1,6 +1,65 @@
 CCSA Staging Site       http://stage.calcharters.org/starting/facilities/
-SubRosa plugin repo     /Users/jay/code/omt/mt-plugin-subrosa
-CCSA GitHub repo        /Users/jay/code/omt/client-mt-ccsa-github
+SubRosa plugin repo     $OMT/mt-plugin-subrosa
+CCSA GitHub repo        $OMT/client-mt-ccsa-github
 CCSA Web directory      /Users/jay/Sites/jay.local/html/ccsa
 CCSA MT directory       /Users/jay/Sites/jay.local/html/ccsa/mt
 
+
+
+Plugins in CCSA installation:
+
+    ActionStreams
+*   AssetDuJour
+*   Assetylene
+    AutoPrefs
+*   Bob
+    CCSATheme
+    CCSAiMIS
+    CommunityActionStreams
+    CustomCSS
+*   ExportUserData
+    FacebookCommenters
+*   FullScreen
+    ImageCropper
+    ImageValidate
+*   LinkToThemeFile
+    LinkedEntryCustomFields
+    Markdown
+*   MaxImageWidth
+    Motion
+    MultiBlog
+*   MultiCheckbox
+*   Optimizer
+    Order
+*   PQManager
+*   Profiler
+*   Send2PQ
+*   SphinxSearch
+    StyleCatcher
+    Supr
+    Textile
+    ThemeManager
+    TypePadAntiSpam
+    WXRImporter
+    WidgetManager
+    feeds-app-lite
+    mixiComment
+    spamlookup
+
+
+
+
+
+$HOME/code/endevver/code/external/SphinxSearch
+$OMT/6acode/Assetylene
+$OMT/mt-comment-flag
+$OMT/mt-plugin-bob
+$OMT/mt-plugin-cf-multicheckbox
+$OMT/mt-plugin-fullscreen
+$OMT/mt-plugin-linktotheme
+$OMT/mt-plugin-maximagewidth
+$OMT/mt-plugin-pqmanager
+$OMT/mt-plugin-profiler
+$OMT/mt-plugin-send2pq
+$OMT/mt-plugin-sphinxsearch
+$OMT/mt-plugin-userexport
