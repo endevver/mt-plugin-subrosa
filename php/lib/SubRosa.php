@@ -73,7 +73,7 @@ class SubRosa extends MT
     var $notify_user;
     var $notify_password;
     
-    function __construct($cfg_file, $blog_id = null)
+    function __construct($cfg_file=null, $blog_id = null)
     {
         $this->error_level = E_ALL ^ E_NOTICE;
         global $subrosa_config;
@@ -83,6 +83,7 @@ class SubRosa extends MT
         $this->site_path          = $subrosa_config['site_path'];
         $this->notify_user        = $subrosa_config['notify_user'];
         $this->notify_pass        = $subrosa_config['notify_pass'];
+        $this->mt_dir             = $subrosa_config['mt_dir'];
 
         $this->init_logger();
         $this->marker('Initializing SubRosa class for request to '
@@ -96,7 +97,10 @@ class SubRosa extends MT
 
         $old_error_level = $this->error_level;
         $this->error_level = E_ALL ^ E_DEPRECATED;
-        parent::MT($blog_id, $cfg_file);
+
+        parent::MT( $blog_id,
+                    SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ));
+
         $this->error_level = $old_error_level;
 
         // Initialize database and store in $ctx->mt->db
@@ -250,18 +254,22 @@ class SubRosa extends MT
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
         $this->policy =& $policy;
-        if ( ! $policy->is_protected( $_SERVER['REQUEST_URI'] ) ) {
+
+        if ( is_null( $entry_id )) {
+            $data =& $this->resolve_url($this->request);
+
+            resolve_url( $_SERVER['REQUEST_URI'] )
+            
+                $this->request = $this->fix_request_path($this->request);
+            
+        }
+
+        if ( ! $policy->is_protected( $entry_id ) ) {
             $this->log_dump(array(noscreen => 1));
             return;
         }
         $this->log_dump(array(noscreen => 1));
 
-
-SCRIPT_URL
-        [SCRIPT_URL] => /ccsa/private/test.php
-        [REQUEST_URI] => /ccsa/private/test.php
-        [SCRIPT_NAME] => /ccsa/private/test.php
-        [PHP_SELF] => /ccsa/private/test.php
         
         // if ( is_null( $entry_id )) {
         //     print php
