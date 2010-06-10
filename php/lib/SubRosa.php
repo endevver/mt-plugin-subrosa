@@ -228,7 +228,6 @@ class SubRosa extends MT
         $auth = new SubRosa_MT_Auth( $username, $password );
         $this->auth =& $auth;
         $auth->init();
-        $this->log_dump(array(noscreen => 1));
         return $auth;
     }
 
@@ -240,12 +239,14 @@ class SubRosa extends MT
 
         session_name('SubRosa');
         session_start();
+        $this->init_viewer();
+        $this->init_plugins();
 
-        // $this->init_plugins();
-$this->log_dump(array(noscreen => 1));
+        $this->log_dump(array(noscreen => 1));
 
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
+        $this->policy =& $policy;
         if ( ! $policy->is_protected( $_SERVER['REQUEST_URI'] ) ) {
             $this->log_dump(array(noscreen => 1));
             return;
