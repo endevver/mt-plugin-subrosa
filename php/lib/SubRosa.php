@@ -241,7 +241,8 @@ class SubRosa extends MT
         session_name('SubRosa');
         session_start();
 
-        $this->init_plugins();
+        // $this->init_plugins();
+$this->log_dump(array(noscreen => 1));
 
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
@@ -678,7 +679,7 @@ class SubRosa extends MT
     */        
     function handle_logout($fileinfo = null) {
         $this->marker();
-        $auth =& $this->init_auth()
+        $auth =& $this->init_auth();
         
         if ($auth->session()) $auth->logout();
         

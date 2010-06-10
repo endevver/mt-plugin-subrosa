@@ -93,7 +93,8 @@ class SubRosa_MT_Auth
 
         if (isset($user) and is_object($user)) {
             $user_hash =  $user->property_hash();
-            $meta      =  $this->db->get_meta( 'author', $user->get( 'id' ));
+            $meta      =  $this->mt->db->get_meta( 'author', 
+                                                   $user->get( 'id' ));
 
             $this->log('$user_hash: '.print_r( $user_hash, true ));
             $this->log('$meta: '.print_r( $meta, true ));
