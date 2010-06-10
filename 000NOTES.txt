@@ -52,17 +52,12 @@ Plugins in CCSA installation:
 
 
 $HOME/code/endevver/code/external/SphinxSearch
-$OMT/6acode/Assetylene
-$OMT/mt-comment-flag
-$OMT/mt-plugin-bob
-$OMT/mt-plugin-cf-multicheckbox
-$OMT/mt-plugin-fullscreen
-$OMT/mt-plugin-linktotheme
-$OMT/mt-plugin-maximagewidth
-$OMT/mt-plugin-pqmanager
-$OMT/mt-plugin-profiler
-$OMT/mt-plugin-send2pq
-$OMT/mt-plugin-sphinxsearch
-$OMT/mt-plugin-userexport
+
+for I in mt-comment-flag mt-plugin-bob mt-plugin-cf-multicheckbox mt-plugin-fullscreen mt-plugin-linktotheme mt-plugin-maximagewidth mt-plugin-pqmanager mt-plugin-profiler mt-plugin-send2pq mt-plugin-sphinxsearch mt-plugin-userexport; do
+    for J in $I/plugins/*; do
+    done
+
+    for J in $I/mt-static/plugins/*; do
+    done
 
 
