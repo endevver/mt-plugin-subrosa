@@ -1,6 +1,7 @@
 CCSA Staging Site       http://stage.calcharters.org/starting/facilities/
 SubRosa plugin repo     $OMT/mt-plugin-subrosa
-CCSA GitHub repo        $OMT/client-mt-ccsa-github
+CCSA GitHub repo        term $OMT/client-mt-ccsa-githubcd /Users/jay/code/omt/client-mt-ccsa-github;  
+
 CCSA Web directory      /Users/jay/Sites/jay.local/html/ccsa
 CCSA MT directory       /Users/jay/Sites/jay.local/html/ccsa/mt
 
@@ -63,3 +64,5 @@ $OMT/mt-plugin-profiler
 $OMT/mt-plugin-send2pq
 $OMT/mt-plugin-sphinxsearch
 $OMT/mt-plugin-userexport
+
+
