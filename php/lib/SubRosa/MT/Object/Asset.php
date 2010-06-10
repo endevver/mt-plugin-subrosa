@@ -37,16 +37,6 @@ class SubRosa_MT_Object_Asset extends SubRosa_MT_Object
             return $obj;
         }
     }
-
-
-//
-//              Ballotelli/SST    Ichikawa/RST
-// Gayle/DMR        Fabregas/MC    Whitzelder/DMR  Higuain/AMR
-// Delderfield  Wolfe       Chapman     Lahm
-//
-//
-//
-//
-
+}
 
 ?>

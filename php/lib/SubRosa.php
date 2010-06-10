@@ -255,9 +255,8 @@ class SubRosa extends MT
         $policy       = new $policy_class();
         $this->policy =& $policy;
 
-        $this->log_dump(array(noscreen => 1));
-
         $policy->check_request( $entry_id );
+        $this->log_dump(array(noscreen => 1));
     }
 
 

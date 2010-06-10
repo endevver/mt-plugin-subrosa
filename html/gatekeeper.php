@@ -17,7 +17,7 @@ $cfg            =& $subrosa_config;
 
 require_once( $cfg['subrosa_path'] );
 
-$mt = new SubRosa( null, $_GET['blog_id'] );
+$mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
 $mt->debugging = true;
 $mt->bootstrap();
 
