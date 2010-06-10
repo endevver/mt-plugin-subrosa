@@ -255,16 +255,7 @@ class SubRosa extends MT
         $policy       = new $policy_class();
         $this->policy =& $policy;
 
-        if ( is_null( $entry_id )) {
-            $data =& $this->resolve_url($this->request);
-
-            resolve_url( $_SERVER['REQUEST_URI'] )
-            
-                $this->request = $this->fix_request_path($this->request);
-            
-        }
-
-        if ( ! $policy->is_protected( $entry_id ) ) {
+        if ( ! $policy->is_authorized( $entry_id ) ) {
             $this->log_dump(array(noscreen => 1));
             return;
         }
