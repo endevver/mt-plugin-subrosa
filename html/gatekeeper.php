@@ -27,14 +27,14 @@ function init_subrosa_config() {
     require('subrosa_config.php');
     $cfg =& $config;
 
-    if ( ! isset( $cfg['subrosa_path'] ))
-        $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
-
     if ( ! isset( $cfg['mt_dir'] ))
         $cfg['mt_dir'] = $_SERVER['MT_HOME'];
 
     if ( ! isset( $cfg['mt_dir'] ))
         die ("Cannot locate MT_HOME at " . __FILE__ . ", line " . __LINE__);
+
+    if ( ! isset( $cfg['subrosa_path'] ))
+        $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
 
     # Append mt_dir to subrosa_path to create an absolute filepath
     $cfg['subrosa_path'] = $cfg['mt_dir'] 
