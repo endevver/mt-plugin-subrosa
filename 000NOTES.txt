@@ -1,27 +1,6 @@
+CCSA Staging Site       http://stage.calcharters.org/starting/facilities/
 SubRosa plugin repo     /Users/jay/code/omt/mt-plugin-subrosa
 CCSA GitHub repo        /Users/jay/code/omt/client-mt-ccsa-github
 CCSA Web directory      /Users/jay/Sites/jay.local/html/ccsa
 CCSA MT directory       /Users/jay/Sites/jay.local/html/ccsa/mt
-
-/* ************************************************************************
-
-    o the iMIS piece is coming together, thank god. That means I finally have profile data I am beginning to work with. So I wanted to share with you the key pieces of custom field data that the privacy component will hinge upon.
-
-    1) Member Status
-
-    This is an enumeration of strings with a number of valid values including: Active Member,Denied or Suspended,Complimentary,Marked for Deletion,Inactive Member,Not Applicable,Prospect Member,Expired Member,Salesforce Insert,Declined Membership,Unknown
-
-    A value of "Active Member" is what allows them to view protected content.
-
-    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_status');
-
-    2) Member Type
-
-    Also an enumeration with values including: Charter School,Charter Support,Developer,Employee,Found. Funder,Government Agency,Individual Contact,ListServ,Member,Media,Other Non Member,Non_Member_Org,Public User,SELPA,Salesforce Co,Vendor,Web Sign-Up
-
-    Any value allows them to see content, however a value of 'Vendor' may have some special cases.
-
-    This value is accessed using this perl code: $author->meta('customfield_private_ccsa_member_type');
-
-************************************************************************ */
 
