@@ -1,3 +1,8 @@
+SubRosa plugin repo     /Users/jay/code/omt/mt-plugin-subrosa
+CCSA GitHub repo        /Users/jay/code/omt/client-mt-ccsa-github
+CCSA Web directory      /Users/jay/Sites/jay.local/html/ccsa
+CCSA MT directory       /Users/jay/Sites/jay.local/html/ccsa/mt
+
 /* ************************************************************************
 
     o the iMIS piece is coming together, thank god. That means I finally have profile data I am beginning to work with. So I wanted to share with you the key pieces of custom field data that the privacy component will hinge upon.
