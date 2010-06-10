@@ -231,7 +231,7 @@ class SubRosa extends MT
         return $auth;
     }
 
-    function bootstrap() {
+    function bootstrap( $entry_id=null ) {
         $this->marker('Bootstrapping SubRosa');
 
         //kill_php_current_session();
@@ -251,8 +251,20 @@ class SubRosa extends MT
             $this->log_dump(array(noscreen => 1));
             return;
         }
-        
+        $this->log_dump(array(noscreen => 1));
 
+
+SCRIPT_URL
+        [SCRIPT_URL] => /ccsa/private/test.php
+        [REQUEST_URI] => /ccsa/private/test.php
+        [SCRIPT_NAME] => /ccsa/private/test.php
+        [PHP_SELF] => /ccsa/private/test.php
+        
+        // if ( is_null( $entry_id )) {
+        //     print php
+        // }
+        // 
+        // if ( $policy->is_authorized() )
     }
 
 
