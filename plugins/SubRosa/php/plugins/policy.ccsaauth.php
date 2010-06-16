@@ -98,39 +98,14 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Only Staff can view Staff-only documents
         if ( $e_access_type == 'CCSA Staff' )       return not_authorized();
 
-        // FIXME -- What are the special considerations for vendors?
-        // if ( $u_type == 'Vendor')
-
-        // FIXME -- Not sure how to implement Content Program-specific check:
-        //          How do I know whether a user is in a program?
-        //          If $e_program (a multi-checkbox) a comma-delimited value?
-        // What user metadata field(s) define(s) whether a person is part of
-        // any particular "content program"?
-        //
-        //     field.private_ccsa_member_zoom
-        //     field.private_ccsa_member_chl
-        //     field.private_ccsa_member_jpa
-        //     field.private_ccsa_member_ces
-        //
-        // Those are boolean values.
-        // 
-        // They correspond to an entry level custom field called "Restrict to Program". If an entry is restricted to Zoom, then their author custom field "private_ccsa_member_zoom" must also be true for them to see the content.
-        // 
-        // The entry level custom field will be a comma delimited list of programs the content is restricted to.
-        //
         // Only members in Content programs can see program-specific docs
         if ( $e_program ) {
-            return not_authorized(); // Returning false until 
-                                     // this is implemented
-           /*
-           ccsa_access_program:
-             name: Restrict to Program
-             description: 'Restricts access to members of the selected programs. This assumes the "Access Control" field is set to "Members Only."'
-             type: multi_checkbox
-             options: 'Zoom,CES,Charter Launch,JPA'
-             tag: EntryRestrictToProgram
-             obj_type: entry
-           */
+            foreach ( explode(',', $e_program) as $program ) {
+                if ($program == 'Charter Launch') $program = 'chl';
+                $user_field = 'private_ccsa_member_'.strtolower($program);
+                if (isset( $user[$user_field] ))
+                    return true;
+            }
         }
 
         // Default to unauthorized to be safe
