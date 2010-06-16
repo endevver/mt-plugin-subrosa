@@ -1,6 +1,25 @@
 <?php
 require_once( 'SubRosa/PolicyAbstract.php' );
 
+//To edit the Apache conf you will need to edit:
+//
+// ~root/www/conf/vhost.conf
+//
+// ssh root@stage.calcharters.org
+//
+// Send me your SSH pub key.
+// 
+// http://stage.calcharters.org/cgi-bin/mt/mt.cgi
+// username/password: jallen/jallen
+// 
+// Github:
+// /var/github/
+// 
+// Web:
+// ~root/www => /var/www/vhosts/calcharters.org/httpdocs|cgi-bin
+// 
+
+
 /**
 * Policy_CCSAAuth - SubRosa policy object which restricts blog
 *                   resources to only authors on that blog.
@@ -95,6 +114,12 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         //     field.private_ccsa_member_jpa
         //     field.private_ccsa_member_ces
         //
+        // Those are boolean values.
+        // 
+        // They correspond to an entry level custom field called "Restrict to Program". If an entry is restricted to Zoom, then their author custom field "private_ccsa_member_zoom" must also be true for them to see the content.
+        // 
+        // The entry level custom field will be a comma delimited list of programs the content is restricted to.
+        //
         // Only members in Content programs can see program-specific docs
         if ( $e_program ) {
             return not_authorized(); // Returning false until 
@@ -114,9 +139,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         return not_authorized();
     }
 
-    public not_authorized() {
+    public function not_authorized() {
+        $user =& $mt->auth->user();  // Can be null if not auth'd'
         if ( $this->is_asset_request ) {
-            // FIXME: REDIRECT
+            return isset($user) ? error_page() : login_page();
         }
         else {
             return false;
@@ -130,7 +156,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         global $mt;
         $mt->marker('Resolving entry with ID: '.$entry_id);
         
-        // If we have an entry ID, by all means load and return it
+        // If we have an entry ID, by all means load the entry and return it
         if ( ! is_null( $entry_id )) {
             $entry =& $mt->db->fetch_entry($entry_id);
             return $entry;
@@ -146,8 +172,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $url_data =& $mt->resolve_url( $this->request );
         if ( isset( $url_data )) {
             // print '<pre>YO: '.print_r($url_data, true)."\n------ END OF YO--------</pre>";
+
+            // If this is not an entry archive return without an entry
             $template_type = $url_data['template']['template_type'];
-            if ( $template_type == 'index' ) return;
+            if ( isset($template_type) and $template_type != 'entry' ) return;
 
             $entry_id      = $url_data['fileinfo']['fileinfo_entry_id'];
             if ( $entry_id ) {
