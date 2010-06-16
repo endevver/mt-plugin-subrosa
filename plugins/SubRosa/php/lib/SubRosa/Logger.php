@@ -49,8 +49,10 @@ class SubRosa_Logger
         }
         $this->driver->log[] = $msg;
         global $mt;
-        if ($mt->log_delay === false) {
-            $this->log_dump();
+        if (isset($mt)) {
+            if ($mt->log_delay === false) {
+                $this->log_dump();
+            }
         }
     }
 
