@@ -35,9 +35,11 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         global $mt;
         $mt->marker('In is_protected, '.__FILE__);
         $entry  =& $this->resolve_entry( $entry_id );
-        $entry  = $mt->db->expand_meta($entry);
-        $access = $entry['ccsa_access_type'];
-        if ( $access != 'Public' ) return $access;
+        if ( isset($entry) ) {
+            $entry  = $mt->db->expand_meta($entry);
+            $access = $entry['ccsa_access_type'];
+            if ( $access != 'Public' ) return $access;
+        }
     }
 
     public function is_authorized( $entry_id=null ) {
@@ -132,16 +134,19 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // resolve_url() gives us an array of the blog, 
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
+        if ( isset( $url_data )) {
+            // print '<pre>YO: '.print_r($url_data, true)."\n------ END OF YO--------</pre>";
+            $template_type = $url_data['template']['template_type'];
+            if ( $template_type == 'index' ) return;
 
-        if ( isset( $url_data ))
-            $entry_id = $url_data['fileinfo']['fileinfo_entry_id'];
-            $entry  =& $this->resolve_entry( $entry_id );
-            if ( isset( $entry) ) return $entry;
-
-        print '<pre>YO: '.print_r($url_data, true)."\n------ END OF YO--------</pre>";
-        
-
-        if ( isset( $entry )) return $entry;
+            $entry_id      = $url_data['fileinfo']['fileinfo_entry_id'];
+            if ( $entry_id ) {
+                $mt->marker("Found entry ID: $entry_id");
+                $entry  =& $this->resolve_entry( $entry_id );
+                $mt->marker('Found entry? '.$entry['entry_id']);
+                if ( isset($entry) ) return $entry;
+            }
+        }
 
         // We have a direct request for an asset
         $this->is_asset_request = 1;

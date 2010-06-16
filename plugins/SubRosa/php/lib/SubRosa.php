@@ -815,7 +815,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             if ($this->debugging) {
                 $log = $this->logger->current_log();
                 $error_console = "<div class=\"debug\" style=\"border:1px solid red; margin:0.5em; padding: 0 1em; text-align:left; background-color:#ddd; color:#000\"><pre>";
-                $error_console .= implode("\n", $log);
+                if ($log) $error_console .= implode("\n", $log);
                 $error_console .= "</pre></div>\n\n";
                 echo $error_console;
             }
