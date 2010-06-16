@@ -35,7 +35,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         global $mt;
         $mt->marker('In is_protected, '.__FILE__);
         $entry  =& $this->resolve_entry( $entry_id );
-        $entry = $mt->db->expand_meta($entry);
+        $entry  = $mt->db->expand_meta($entry);
         $access = $entry['ccsa_access_type'];
         if ( $access != 'Public' ) return $access;
     }
@@ -147,7 +147,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $this->is_asset_request = 1;
 
         // Load all assets with the same filename
-        require_once 'SubRosa/MT/Object/Asset.php';
+        require_once('SubRosa/MT/Object/Asset.php');
         $assets = SubRosa_MT_Object_Asset::load(
             array('file_name' => basename( $this->request ))
         );
@@ -164,7 +164,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
         if ( ! isset( $asset )) return;
 
-        require_once 'SubRosa/MT/Object/ObjectAsset.php';
+        require_once('SubRosa/MT/Object/ObjectAsset.php');
         $oasset = SubRosa_MT_Object_Asset::load(
             array(
                 'object_ds' => 'entry',

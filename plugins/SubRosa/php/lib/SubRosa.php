@@ -153,7 +153,9 @@ class SubRosa extends MT
     function init_plugins() {
         $this->marker('Initializing MT plugins');
         if (!$this->plugins_initialized) {
+            print "Going into parent::init_plugins\n";
             parent::init_plugins();
+            print "Back from parent::init_plugins\n";
             $this->init_subrosa_plugins();
             $this->plugins_initialized = 1;
         }

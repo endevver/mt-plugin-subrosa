@@ -1,5 +1,4 @@
 <?php
-
 global $mt;
 $ctx = &$mt->context();
 
