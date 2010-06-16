@@ -1,7 +1,7 @@
 <?php
 
 // === TextMate error handling ===
-include_once '/Applications/TextMate.app/Contents/SharedSupport/Bundles/PHP.tmbundle/Support/textmate.php';
+// include_once '/Applications/TextMate.app/Contents/SharedSupport/Bundles/PHP.tmbundle/Support/textmate.php';
 
 // Even when display_errors is on, errors that occur
 // during PHP's startup sequence are not displayed.
