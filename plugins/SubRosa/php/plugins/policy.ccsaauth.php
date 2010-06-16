@@ -70,16 +70,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         if ( is_null($e_access_type) )              return true;
 
         // Non-public documents require authentication
-        if ( ! $user )                              return false;
+        if ( ! $user )                              return not_authorized();
 
         // Non-public documents require active membership
-        if ( $u_status != 'A=Active Member')        return false;
+        if ( $u_status != 'A=Active Member')        return not_authorized();
 
          // Staff can see anything
          if ( $u_is_staff )                         return true;
 
         // Only Staff can view Staff-only documents
-        if ( $e_access_type == 'CCSA Staff' )       return false;
+        if ( $e_access_type == 'CCSA Staff' )       return not_authorized();
 
         // FIXME -- What are the special considerations for vendors?
         // if ( $u_type == 'Vendor')
@@ -97,7 +97,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         //
         // Only members in Content programs can see program-specific docs
         if ( $e_program ) {
-            return false; // Returning false until this is implemented
+            return not_authorized(); // Returning false until 
+                                     // this is implemented
            /*
            ccsa_access_program:
              name: Restrict to Program
@@ -110,7 +111,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
 
         // Default to unauthorized to be safe
-        return false;
+        return not_authorized();
+    }
+
+    public not_authorized() {
+        if ( $this->is_asset_request ) {
+            // FIXME: REDIRECT
+        }
+        else {
+            return false;
+        }
     }
 
     public function login_page() { }
