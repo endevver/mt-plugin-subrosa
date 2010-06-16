@@ -1,4 +1,5 @@
 <?php
+
 global $mt;
 $ctx = &$mt->context();
 
@@ -227,7 +228,7 @@ function smarty_block_MTSubRosaUpdates($args, $content, &$ctx, &$repeat) {
 
         if (isset($args['days'])) {
             $day_filter = 'and ' . $ctx->mt->db->limit_by_day_sql('comment_created_on', intval($args['days']));
-	}
+    }
         $order = 'desc';
         $sql = "
             select *
@@ -241,14 +242,14 @@ function smarty_block_MTSubRosaUpdates($args, $content, &$ctx, &$repeat) {
                    <LIMIT>";
 
         if (isset($args['lastn'])) {
-	    $sql = $ctx->mt->db->apply_limit_sql($sql, $args['lastn'], $args['offset']);
+        $sql = $ctx->mt->db->apply_limit_sql($sql, $args['lastn'], $args['offset']);
         } else {
-	  $sql = preg_replace('/<LIMIT>/', '', $sql);
-	}
-	//	print "<!-- SQL USED: $sql -->";
+      $sql = preg_replace('/<LIMIT>/', '', $sql);
+    }
+    //  print "<!-- SQL USED: $sql -->";
         $comments =& $ctx->mt->db->get_results($sql, ARRAY_A);
 
-	//        $comments =& $ctx->mt->db->fetch_comments($args);
+    //        $comments =& $ctx->mt->db->fetch_comments($args);
         foreach ($comments as $comment) {
             $comment['update_created_on'] = $comment['comment_created_on'];
             $comment['update_created_on'] = preg_replace('/[-:\s]+/', '', $comment['update_created_on']);
@@ -359,6 +360,7 @@ function smarty_function_MTSubRosaUpdatePermalink($args, &$ctx) {
     $link = $ctx->mt->db->entry_link($entry['entry_id'], $at, $args);
     return $link.$anchor;
 }
+
 function smarty_function_MTSubRosaUpdateAuthor($args, &$ctx) {
     $update = $ctx->stash('update');
     if ($update['update_type'] == 'entry') {
@@ -368,6 +370,7 @@ function smarty_function_MTSubRosaUpdateAuthor($args, &$ctx) {
         return $update['comment_author'];
     }
 }
+
 function smarty_function_MTSubRosaUpdateEntryTitle($args, &$ctx) {
     $update = $ctx->stash('update');
     if ($update['update_type'] == 'entry') {
@@ -376,9 +379,11 @@ function smarty_function_MTSubRosaUpdateEntryTitle($args, &$ctx) {
         return $update['entry_title'];
     }
 }
+
 function smarty_function_MTSubRosaUpdateDate($args, &$ctx) {
     $update = $ctx->stash('update');
     $args['ts'] = $update[$update['update_type'].'_created_on'];
     return $ctx->_hdlr_date($args, $ctx);
 }
+
 ?>

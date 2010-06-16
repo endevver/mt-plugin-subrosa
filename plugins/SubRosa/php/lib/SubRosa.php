@@ -41,7 +41,8 @@ $include_path = join( ':',
         $base_libdir,                                 // Our lib
         str_replace( 'lib', 'extlib', $base_libdir ), 
         $mt_libdir,                                   // MT lib
-        str_replace( 'lib', 'extlib', $mt_libdir ),   
+        str_replace( 'lib', 'extlib', $mt_libdir ),
+        str_replace( 'lib', 'plugins', $mt_libdir ),
         ini_get('include_path'),                      // Current value
     ));
 // print "<p>include_path: $include_path</p>";
@@ -153,9 +154,7 @@ class SubRosa extends MT
     function init_plugins() {
         $this->marker('Initializing MT plugins');
         if (!$this->plugins_initialized) {
-            print "Going into parent::init_plugins\n";
             parent::init_plugins();
-            print "Back from parent::init_plugins\n";
             $this->init_subrosa_plugins();
             $this->plugins_initialized = 1;
         }
@@ -193,7 +192,7 @@ class SubRosa extends MT
 
                 // Only process plugin files starting with
                 // a valid type (see above) and ending in ".php".
-                if ( preg_match('/^(init|policy|module)\.(.+?)\.php$/',
+                if ( preg_match('/^(policy|module)\.(.+?)\.php$/',
                                     $file, $matches)) {
                     $type = ucfirst(    $matches[1] );
                     $base = strtolower( $matches[2] );
