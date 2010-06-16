@@ -49,8 +49,9 @@ class SubRosa_Util
     }
 
     function os_path() {
+        $arrrrrgs = func_get_args();
         return str_replace(
-            '//', '/', join( DIRECTORY_SEPARATOR, func_get_args() )
+            '//', '/', join( DIRECTORY_SEPARATOR, $arrrrrgs )
         );
     }
 
