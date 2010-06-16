@@ -1,7 +1,5 @@
 <?php
 
-include('/Users/jay/Sites/docrootfix.php');
-
 // SubRosa request gatekeeper script
 //
 // This script bootstraps the SubRosa framework, inspects the 
