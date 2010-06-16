@@ -43,11 +43,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function check_request( $entry_id=null ) {
         global $mt;
         $mt->marker('In check_request, '.__FILE__);
-        if (  ! $this->is_authorized( $entry_id ) 
-             && $this->is_asset_request ) {
-            $user =& $mt->auth->user();
-            return isset( $user ) ? error_page() : login_page();
-        }
+        return $this->is_authorized( $entry_id );
     }
 
     public function is_protected( $entry_id=null )  {
