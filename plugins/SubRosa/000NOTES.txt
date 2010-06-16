@@ -1,9 +1,0 @@
-CCSA Staging Site       http://stage.calcharters.org/starting/facilities/
-SubRosa plugin repo     $OMT/mt-plugin-subrosa
-CCSA GitHub repo        term $OMT/client-mt-ccsa-githubcd /Users/jay/code/omt/client-mt-ccsa-github;  
-
-CCSA Web directory      /Users/jay/Sites/jay.local/html/ccsa
-CCSA MT directory       /Users/jay/Sites/jay.local/html/ccsa/mt
-
-
-
