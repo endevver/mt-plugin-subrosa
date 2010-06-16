@@ -28,6 +28,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
     var $request;
     var $is_asset_request = 0;
+    var $entry;
+    var $url_data;
 
     /**
      * is_protected() - This function check
@@ -49,10 +51,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function is_protected( $entry_id=null )  {
         global $mt;
         $mt->marker('In is_protected, '.__FILE__);
-        $entry  =& $this->resolve_entry( $entry_id );
+        $entry =& $this->resolve_entry( $entry_id );
         if ( isset($entry) ) {
-            $entry  = $mt->db->expand_meta($entry);
-            $access = $entry['ccsa_access_type'];
+            $this->entry   = $mt->db->expand_meta($entry);
+            $access        = $entry['ccsa_access_type'];
             if ( $access != 'Public' ) return $access;
         }
     }
@@ -62,8 +64,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $mt->marker('In is_authorized, '.__FILE__);
 
         // Fetch details about the entry in question
-        $entry =& $this->resolve_entry( $entry_id );
-        $entry = $mt->db->expand_meta($entry);
+        $entry       =& $this->resolve_entry( $entry_id );
+        $this->entry = $mt->db->expand_meta( $entry );
         // print '<pre>YO: '.print_r($entry, true)."\n------ END OF YO--------</pre>";
 
         // $e_meta         =  $mt->db->get_meta( 'entry', $entry_id );
@@ -145,8 +147,21 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
     }
 
-    public function login_page() { }
-    public function error_page() { }
+    public function login_page() {
+        $url_data =& $this->url_data;
+        if ( isset($this->entry) &&  isset($url_data['fileinfo'])) {
+            $url = $url_data['fileinfo']['fileinfo_url'];
+            header("Location: $url");
+            exit;
+        }
+        else {
+            print "Could not find entry or fileinfo:\n";
+            print_r($url_data);
+            print_r($entry);
+            die "Aborting request";
+        }
+    }
+    public function error_page() { $this->login_page(); }
 
     public function &resolve_entry( $entry_id=null ) {
         global $mt;
@@ -168,6 +183,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $url_data =& $mt->resolve_url( $this->request );
         if ( isset( $url_data )) {
             // print '<pre>YO: '.print_r($url_data, true)."\n------ END OF YO--------</pre>";
+
+            $this->url_data = $url_data;
 
             // If this is not an entry archive return without an entry
             $template_type = $url_data['template']['template_type'];
