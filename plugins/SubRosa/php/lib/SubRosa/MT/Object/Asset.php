@@ -23,7 +23,7 @@ class SubRosa_MT_Object_Asset extends SubRosa_MT_Object
         global $mt;
         if ($results = $mt->db->load('asset', $terms)) {
             foreach ($results as $data) {
-                $object = new MT_Asset($data);
+                $object = new SubRosa_MT_Object_Asset($data);
                 $objects[] = $object;
             }
             return (count($objects) == 1) ? $objects[0] : $objects;
