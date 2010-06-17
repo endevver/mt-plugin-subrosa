@@ -40,7 +40,7 @@ class SubRosa_MT_Auth
             $cmtr_session = SubRosa_MT_Object_Session::load( $cmtr_cookie );
             if (is_object($cmtr_session)) $this->session($cmtr_session);
             $user = SubRosa_MT_Object_Author::load(
-                array('name' => $cmtr_session['session_name'])
+                array('name' => $cmtr_session->name)
             );
             if (is_object($user)) $this->user($user);
             if ( $this->user() && $this->session() ) return;
