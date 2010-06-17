@@ -109,7 +109,7 @@ class SubRosa_MT_Auth
         // Get PHP session information
         $phpname = SubRosa_Util::phpsession('name');
         $phpsid  = SubRosa_Util::phpsession('session_id');
-        $this->mt->marker("phpname: $phpname, phpsid: $phpsid");
+        $this->mt->marker("PHP Session info: name: $phpname, sid: $phpsid");
     }
 
     function cmtr_session() {
@@ -119,6 +119,7 @@ class SubRosa_MT_Auth
         if ( isset($cmtr_cookie_sid)) {
             $this->mt->marker('Found mt_commenter cookie: '.$cmtr_cookie_sid);
             $cmtr_session = SubRosa_MT_Object_Session::load($cmtr_cookie_sid);
+	    $this->mt->log(print_r($cmtr_session,true));
             return $cmtr_session;
         }
     }
@@ -189,7 +190,10 @@ class SubRosa_MT_Auth
         }
 
         if (isset($session) and is_object($session)) {
+	  $this->mt->log(print_r($session, true));
+	  $this->mt->log('About to set the PHP session_id from '.$session->get('id'));
             SubRosa_Util::phpsession('session_id', $session->get('id'));
+            $this->mt->log(print_r($_SESSION, true));
             return $session;
         }
     }

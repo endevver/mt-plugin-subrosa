@@ -37,11 +37,14 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
     }
 
     function user() {
-        $this->mt->marker();
         $userid = $this->get('userid');
         if ($userid) {
-            $this->log("Loading user $userid from SubRosa_MT_Object_Author");
-            $user = SubRosa_MT_Object_Author::load($userid);
+	    $this->mt->marker("Loading user $userid from SubRosa_MT_Object_Author");
+	    $user = SubRosa_MT_Object_Author::load($userid);
+	    $username = $this->get('username');
+	    if ( isset($user) && ! isset($username)) {
+	        $this->set('username', $user->get('name'));
+	    }
         }
         return $user;
     }
