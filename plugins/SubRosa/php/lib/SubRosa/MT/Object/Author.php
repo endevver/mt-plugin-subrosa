@@ -91,7 +91,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
         if (isset($subrosa_config)) {
             $authorized_users = $subrosa_config['blog_id'][$blog_id];
         $this->log("authorized users for blog ID $blog_id");
-	$this->log($authorized_users)        ;
+    $this->log($authorized_users)        ;
             if (in_array($this->get('id'), $authorized_users)) {
 
                 if (isset($this->mt->auth)) {

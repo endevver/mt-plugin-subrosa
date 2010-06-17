@@ -102,7 +102,7 @@ class SubRosa extends MT
 
         parent::MT( $blog_id,
                     SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ),
-		    $this->error_level);
+            $this->error_level);
 
         error_reporting( $old_error_level );
 
@@ -120,7 +120,7 @@ class SubRosa extends MT
 
         date_default_timezone_set('America/Los_Angeles');
 
-	global $base_libdir;
+    global $base_libdir;
         $this->template_dir
             = SubRosa_Util::os_path( dirname($base_libdir), '/tmpl' );
         $this->template['debug'] = 'debug-jay.tpl';
@@ -782,28 +782,28 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
 //    function error_handler($errno, $errstr, $errfile, $errline) {
 //      switch ($errno) {
 //        case E_USER_ERROR:
-//	  echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
-//	  echo "  Fatal error on line $errline in file $errfile";
-//	  echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
-//	  echo "Aborting...<br />\n";
-//	  exit(1);
-//	  break;
+//    echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
+//    echo "  Fatal error on line $errline in file $errfile";
+//    echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+//    echo "Aborting...<br />\n";
+//    exit(1);
+//    break;
 //
-//	case E_USER_WARNING:
-//	  echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
-//	  break;
+//  case E_USER_WARNING:
+//    echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
+//    break;
 //
-//	case E_USER_NOTICE:
-//	  echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
-//	  break;
+//  case E_USER_NOTICE:
+//    echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
+//    break;
 //
-//	default:
-//	  echo "Unknown error type: [$errno] $errstr<br />\n";
-//	  break;
-//	}
+//  default:
+//    echo "Unknown error type: [$errno] $errstr<br />\n";
+//    break;
+//  }
 //
-//	/* Don't execute PHP internal error handler */
-//	return true;
+//  /* Don't execute PHP internal error handler */
+//  return true;
 //      }
 //
 //    return;
