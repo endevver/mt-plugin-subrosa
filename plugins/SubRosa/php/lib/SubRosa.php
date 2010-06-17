@@ -251,14 +251,14 @@ class SubRosa extends MT
         $this->init_viewer();
         $this->init_plugins();
 
-        $this->log_dump(array(noscreen => 1));
+        $this->log_dump(array('noscreen' => 1));
 
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
         $this->policy =& $policy;
 
         $policy->check_request( $entry_id );
-        $this->log_dump(array(noscreen => 1));
+        $this->log_dump(array('noscreen' => 1));
     }
 
 
@@ -372,7 +372,7 @@ class SubRosa extends MT
         // printing of the requested page: a redirect or actual 404
         if ($this->redirect()) {
             $this->log("Redirecting client to ".$this->redirect());
-            $this->log_dump(array(noscreen => 1));
+            $this->log_dump(array('noscreen' => 1));
             ob_end_clean();
             header('Location: '.$this->redirect());
             exit;

@@ -33,7 +33,20 @@ class SubRosa_MT_Auth
         list($cname, $csid, $cpersist) = SubRosa_Util::get_user_cookie();
         if ($cname) $this->log("Found cookie for $cname with session $csid");
 
-        if (empty($phpname) and empty($cname)) {
+        // Get commenter session information
+        list( $cmtr_cookie )
+            = SubRosa_Util::get_user_cookie('mt_commenter');
+        if ( isset($cmtr_cookie)) {
+            $cmtr_session = SubRosa_MT_Object_Session::load( $cmtr_cookie );
+            if (is_object($cmtr_session)) $this->session($cmtr_session);
+            $user = SubRosa_MT_Object_Author::load(
+                array('name' => $cmtr_session['session_name'])
+            );
+            if (is_object($user)) $this->user($user);
+            if ( $this->user() && $this->session() ) return;
+        }
+
+        if (empty($phpname) and empty($cname) and empty($cmtr_session)) {
             $this->log('No auth information available');
             $this->no_auth_info = 1;
             return;

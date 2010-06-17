@@ -28,7 +28,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
                 $sessdata
                    = SubRosa_Util::unpack_session_data($data['session_data']);
                 $object = new SubRosa_MT_Object_Session(array(
-                    id => $data['session_id'],
+                    id     => $data['session_id'],
                     userid => $sessdata['author_id']));
                 $objects[] = $object;
             }
