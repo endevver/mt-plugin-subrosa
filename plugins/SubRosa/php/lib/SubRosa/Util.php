@@ -57,7 +57,7 @@ class SubRosa_Util
 
     function unpack_session_data($sdata) {
         global $mt;
-        $mt->marker();
+        //$mt->marker();
         $mtdb =& $mt->db;
         if (!$mtdb->serializer) {
             require_once($mt->config['phplibdir'].'/MTSerialize.php');

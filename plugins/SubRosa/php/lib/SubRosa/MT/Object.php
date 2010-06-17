@@ -8,7 +8,7 @@ class SubRosa_MT_Object
     function __construct($data=null) {
         global $mt;
         $this->mt = $mt;
-        $this->mt->marker();
+        //$this->mt->marker();
 
         if (isset($data)) {
             $this->init($data);
@@ -17,7 +17,7 @@ class SubRosa_MT_Object
     }
 
     function init($data=null) {
-        $this->mt->marker();
+      //$this->mt->marker();
         foreach ($this->properties as $key) {
             $this->_properties[$key] = null;
         }

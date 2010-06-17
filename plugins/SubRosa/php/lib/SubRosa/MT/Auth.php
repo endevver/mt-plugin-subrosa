@@ -13,7 +13,7 @@ class SubRosa_MT_Auth
     function __construct($username=null, $pass=null) {
         global $mt;
         $this->mt =& $mt;
-        $this->mt->marker();
+        $this->mt->marker('Initializing SubRosa_Auth');
         
         if (isset($username) and isset($pass)) {
             $this->username = $username;
@@ -23,31 +23,55 @@ class SubRosa_MT_Auth
     }
 
     function init() {
-        $this->mt->marker();
 
         // Get PHP session information
         $phpname = SubRosa_Util::phpsession('name');
         $phpsid  = SubRosa_Util::phpsession('session_id');
+        $this->mt->marker("phpname: $phpname, phpsid: $phpsid");
+
+        // Get commenter session information
+        list( $cmtr_cookie_sid )
+            = SubRosa_Util::get_user_cookie('mt_commenter');
+
+        if ( isset($cmtr_cookie_sid)) {
+	    $this->mt->marker('cmtr_cookie_sid: '.$cmtr_cookie_sid);
+            $cmtr_session = SubRosa_MT_Object_Session::load( $cmtr_cookie_sid );
+	    if ( is_object($cmtr_session) ) {
+	        if (   ( isset($phpname) && ($cmtr_session->get('userid') != $phpname) )
+		    || ( isset($phpsid)  && ($cmtr_session->get('id')     != $phpsid) )) {
+		    $this->mt->marker("Destroying session info, phpname: $phpname, phpsid: $phpsid, session-userid: "
+                                      .$cmtr_session->get('userid').", session-id: ".$cmtr_session->get('id'));
+	            SubRosa_Util::phpsession(false);
+	        }
+	        else {
+		    if ( isset($phpsid)) {
+		        $this->mt->marker('PHP session data matches mt_commenter cookie');
+		    }
+		    else {
+		        $this->mt->marker('mt_commenter cookie with no PHP session information');
+		    }
+
+  		    $this->session( $cmtr_session );
+		    $user = SubRosa_MT_Object_Author::load(array('name' => $cmtr_session->name));
+		    if (is_object($user)) $this->user($user);
+	        }
+		if ( $this->user() && $this->session() ) return;
+	    }
+	    else {
+  	        $this->mt->marker('No active session matching mt_commenter cookie');
+	    }
+	}
+	else {
+	  $this->mt->marker('No mt_commenter cookie set');
+
+	}
 
         // Get MT cookie information
         list($cname, $csid, $cpersist) = SubRosa_Util::get_user_cookie();
-        if ($cname) $this->log("Found cookie for $cname with session $csid");
-
-        // Get commenter session information
-        list( $cmtr_cookie )
-            = SubRosa_Util::get_user_cookie('mt_commenter');
-        if ( isset($cmtr_cookie)) {
-            $cmtr_session = SubRosa_MT_Object_Session::load( $cmtr_cookie );
-            if (is_object($cmtr_session)) $this->session($cmtr_session);
-            $user = SubRosa_MT_Object_Author::load(
-                array('name' => $cmtr_session->name)
-            );
-            if (is_object($user)) $this->user($user);
-            if ( $this->user() && $this->session() ) return;
-        }
+        if ($cname) $this->mt->marker("Found cookie for $cname with session $csid");
 
         if (empty($phpname) and empty($cname) and empty($cmtr_session)) {
-            $this->log('No auth information available');
+            $this->mt->marker('No auth information available');
             $this->no_auth_info = 1;
             return;
         }

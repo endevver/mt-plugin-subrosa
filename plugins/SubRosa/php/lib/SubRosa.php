@@ -14,7 +14,7 @@ ini_set('display_startup_errors', true); // off
 //  Note: Although display_errors may be set at runtime (with ini_set()), it //
 //  won't have any affect if the script has fatal errors. This is because the
 //  desired runtime action does not get executed.
-ini_set('display_errors', false); // off
+ini_set('display_errors', isset($_GET['debug']) ? true : false);
 
 // Tells whether script error messages should be logged to
 // the server's error log or error_log. This option is thus
@@ -25,9 +25,10 @@ ini_set('log_errors', true);           // on
 // session ids in URLs. Defaults to true in PHP 5.3.0
 ini_set('session.use_only_cookies', true); 
 
-//Name of the file where script errors should be logged.
-//ini_set('error_log', 1);                              //NULL
-//ini_set('error_log', '/home/tdi/JAY/boo-php.log');    //NULL
+// Where script errors should be logged:
+//   ini_set('error_log', '/PATH/TO/php-errors.log');  // Log to file
+//   ini_set('error_log', 'syslog');                   // Log to syslog
+//   UNSET                                             // Log to STDERR
 
 require_once( 'SubRosa/Util.php' );
 
@@ -100,7 +101,10 @@ class SubRosa extends MT
         $this->error_level = E_ALL ^ E_DEPRECATED;
 
         parent::MT( $blog_id,
-                    SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ));
+                    SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ),
+		    $this->error_level);
+
+        error_reporting( $old_error_level );
 
         $this->error_level = $old_error_level;
 
