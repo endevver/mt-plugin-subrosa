@@ -87,16 +87,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         if ( is_null($e_access_type) )              return true;
 
         // Non-public documents require authentication
-        if ( ! $user )                              return not_authorized();
+        if ( ! $user )                              return $this->not_authorized();
 
         // Non-public documents require active membership
-        if ( $u_status != 'A=Active Member')        return not_authorized();
+        if ( $u_status != 'A=Active Member')        return $this->not_authorized();
 
          // Staff can see anything
          if ( $u_is_staff )                         return true;
 
         // Only Staff can view Staff-only documents
-        if ( $e_access_type == 'CCSA Staff' )       return not_authorized();
+        if ( $e_access_type == 'CCSA Staff' )       return $this->not_authorized();
 
         // Only members in Content programs can see program-specific docs
         if ( $e_program ) {
@@ -109,11 +109,11 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
 
         // Default to unauthorized to be safe
-        return not_authorized();
+        return $this->not_authorized();
     }
 
     public function not_authorized() {
-        $user =& $mt->auth->user();  // Can be null if not auth'd'
+        $user =& $mt->auth->user;  // Can be null if not auth'd'
         if ( $this->is_asset_request ) {
             return isset($user) ? error_page() : login_page();
         }
@@ -133,7 +133,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             print "Could not find entry or fileinfo:\n";
             print_r($url_data);
             print_r($entry);
-            die "Aborting request";
+            die("Aborting request");
         }
     }
     public function error_page() { $this->login_page(); }
