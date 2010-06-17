@@ -14,7 +14,7 @@ ini_set('display_startup_errors', true); // off
 //  Note: Although display_errors may be set at runtime (with ini_set()), it //
 //  won't have any affect if the script has fatal errors. This is because the
 //  desired runtime action does not get executed.
-ini_set('display_errors', false); // off
+ini_set('display_errors', true); // off
 
 // Tells whether script error messages should be logged to
 // the server's error log or error_log. This option is thus
