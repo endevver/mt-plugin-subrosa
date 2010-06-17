@@ -11,6 +11,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     var $is_asset_request = 0;
     var $entry;
     var $url_data;
+    var $cached_entries = array();
 
     /**
      * is_protected() - This function check
@@ -34,8 +35,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $mt->marker('In is_protected, '.__FILE__);
         $entry =& $this->resolve_entry( $entry_id );
         if ( isset($entry) ) {
-            $this->entry   = $mt->db->expand_meta($entry);
-            $access        = $entry['ccsa_access_type'];
+            $access        = $entry['entry_field.ccsa_access_type'];
             if ( $access != 'Public' ) return $access;
         }
     }
@@ -46,39 +46,46 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         // Fetch details about the entry in question
         $entry       =& $this->resolve_entry( $entry_id );
-        $this->entry = $mt->db->expand_meta( $entry );
+
         if ( isset( $entry ) ) {
             $mt->log('Entry resolved: '.print_r($entry, true));
             // $e_meta         =  $mt->db->get_meta( 'entry', $entry_id );
-            $e_program      =  $entry['ccsa_access_program'];
-            $e_access_type  =  $this->is_protected( $entry_id ); // null if public
+            $e_program      =  $entry['entry_field.ccsa_access_program'];
+            $e_access_type  =  $this->is_protected( $entry['entry_id'] ); // null if public
         }
 
         // Fetch details about the current user
         $user           =& $mt->auth->user();  // Can be null if not auth'd'
         if ( $user ) {
-            $u_status   =  $user->get('private_ccsa_member_status');
-            $u_type     =  $user->get('private_ccsa_member_type');
-            $u_is_staff =  (    $user->get('private_ccsa_company_id')
-                             == $mt->config('iMISAdminAccountId')       );
+            $u_status   =  $user->get('field.private_ccsa_member_status');
+            $u_type     =  $user->get('field.private_ccsa_member_type');
+            $u_is_staff =  (    $user->get('field.private_ccsa_company_id')
+                             == $mt->config('imisadminaccountid')       );
         }
+
+        $mt->marker("Access type: $e_access_type");
 
         // Execute the decision tree...
         //
         // Everyone is_authorized for public documents
         if ( is_null($e_access_type) )              return true;
+        $mt->marker('Not public');
 
         // Non-public documents require authentication
         if ( ! $user )                              return $this->not_authorized();
+        $mt->marker('Have authenticated user with $u_status: '.$u_status);
 
         // Non-public documents require active membership
-        if ( $u_status != 'A=Active Member')        return $this->not_authorized();
+        if ( $u_status != 'Active Member')        return $this->not_authorized();
+        $mt->marker('User is active');
 
          // Staff can see anything
          if ( $u_is_staff )                         return true;
+        $mt->marker('User is not staff');
 
         // Only Staff can view Staff-only documents
         if ( $e_access_type == 'CCSA Staff' )       return $this->not_authorized();
+        $mt->marker('Document is not staff only');
 
         // Only members in Content programs can see program-specific docs
         if ( $e_program ) {
@@ -120,14 +127,31 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     }
     public function error_page() { $this->login_page(); }
 
+    public function &entry_cache($entry_id=null, $entry=null ) {
+        global $mt;
+        $cache_key = isset($entry_id) ? $entry_id : 'default'; //  Null entry IDs get default key
+        $cache =& $this->cached_entries;
+        if ( isset($entry) ) {
+            $entry = $mt->db->expand_meta( $entry );
+            $this->entry =& $entry;
+            $cache[$entry['entry_id']] =& $entry;
+            if (! isset($entry_id)) $cache['default'] =& $entry;
+        }
+        return $cache[$cache_key];
+    }
+
     public function &resolve_entry( $entry_id=null ) {
         global $mt;
         $mt->marker('Resolving entry with ID: '.$entry_id);
-        
+
+        // Check cache first.
+        $entry = $this->entry_cache( $entry_id );
+        if ( isset( $entry ) ) return $entry;
+
         // If we have an entry ID, by all means load the entry and return it
         if ( ! is_null( $entry_id )) {
             $entry =& $mt->db->fetch_entry($entry_id);
-            return $entry;
+            return $this->entry_cache( $entry_id, $entry );
         }
 
         // Otherwise, try to discover the entry via the REQUEST_URI
@@ -139,9 +163,15 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
         if ( isset( $url_data )) {
-            $mt->log('URL data for entry: '.print_r($url_data, true));
+          //$mt->log('Got URL data for entry'); //.print_r($url_data, true));
+            $mt->log('Got URL data for entry: '.print_r($url_data, true));
 
             $this->url_data = $url_data;
+
+            // No pages are protected
+            if ($url_data['fileinfo']['fileinfo_archive_type'] == 'Page') {
+                return null;
+            }
 
             // If this is not an entry archive return without an entry
             $template_type = $url_data['template']['template_type'];
