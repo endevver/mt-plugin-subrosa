@@ -69,12 +69,8 @@ class SubRosa_MT_Auth
             }
         }
 
-        // If, at this point, we have a PHP session,
-        // clear it becuse it's a stale session.
-        if (isset($phpsid)) {
-            SubRosa_Util::phpsession(false);
-            $this->mt->marker('Killed stale PHP session: '.$phpsid);
-        }
+
+        // If, at this point, we have a PHP session, it's a stale session.
         
         // Fall back to commenter cookie session info if available
         if ( isset($csid) ) {
@@ -110,6 +106,7 @@ class SubRosa_MT_Auth
         $phpname = SubRosa_Util::phpsession('name');
         $phpsid  = SubRosa_Util::phpsession('session_id');
         $this->mt->marker("PHP Session info: name: $phpname, sid: $phpsid");
+        return (array($phpname, $phpsid));
     }
 
     function cmtr_session() {

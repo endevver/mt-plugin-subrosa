@@ -1,25 +1,6 @@
 <?php
 require_once( 'SubRosa/PolicyAbstract.php' );
 
-//To edit the Apache conf you will need to edit:
-//
-// ~root/www/conf/vhost.conf
-//
-// ssh root@stage.calcharters.org
-//
-// Send me your SSH pub key.
-// 
-// http://stage.calcharters.org/cgi-bin/mt/mt.cgi
-// username/password: jallen/jallen
-// 
-// Github:
-// /var/github/
-// 
-// Web:
-// ~root/www => /var/www/vhosts/calcharters.org/httpdocs|cgi-bin
-// 
-
-
 /**
 * Policy_CCSAAuth - SubRosa policy object which restricts blog
 *                   resources to only authors on that blog.
@@ -44,7 +25,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
     public function check_request( $entry_id=null ) {
         global $mt;
-        $mt->marker('In check_request, '.__FILE__);
+        $mt->marker("In check_request with entry_id $entry_id, ".__FILE__);
         return $this->is_authorized( $entry_id );
     }
 
@@ -66,11 +47,12 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Fetch details about the entry in question
         $entry       =& $this->resolve_entry( $entry_id );
         $this->entry = $mt->db->expand_meta( $entry );
-        // print '<pre>YO: '.print_r($entry, true)."\n------ END OF YO--------</pre>";
-
-        // $e_meta         =  $mt->db->get_meta( 'entry', $entry_id );
-        $e_program      =  $entry['ccsa_access_program'];
-        $e_access_type  =  $this->is_protected( $entry_id ); // null if public
+        if ( isset( $entry ) ) {
+            $mt->log('Entry resolved: '.print_r($entry, true));
+            // $e_meta         =  $mt->db->get_meta( 'entry', $entry_id );
+            $e_program      =  $entry['ccsa_access_program'];
+            $e_access_type  =  $this->is_protected( $entry_id ); // null if public
+        }
 
         // Fetch details about the current user
         $user           =& $mt->auth->user();  // Can be null if not auth'd'
@@ -157,16 +139,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
         if ( isset( $url_data )) {
-            // print '<pre>YO: '.print_r($url_data, true)."\n------ END OF YO--------</pre>";
+            $mt->log('URL data for entry: '.print_r($url_data, true));
 
             $this->url_data = $url_data;
 
             // If this is not an entry archive return without an entry
             $template_type = $url_data['template']['template_type'];
-            if ( isset($template_type) and $template_type != 'entry' ) return;
+            if ( isset($template_type) and $template_type != 'individual' ) return null;
 
             $entry_id      = $url_data['fileinfo']['fileinfo_entry_id'];
-            if ( $entry_id ) {
+            if ( isset($entry_id) ) {
                 $mt->marker("Found entry ID: $entry_id");
                 $entry  =& $this->resolve_entry( $entry_id );
                 $mt->marker('Found entry? '.$entry['entry_id']);
