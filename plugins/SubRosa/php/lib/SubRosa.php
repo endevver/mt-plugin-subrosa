@@ -14,7 +14,7 @@ ini_set('display_startup_errors', true); // off
 //  Note: Although display_errors may be set at runtime (with ini_set()), it //
 //  won't have any affect if the script has fatal errors. This is because the
 //  desired runtime action does not get executed.
-ini_set('display_errors', true); // off
+ini_set('display_errors', false); // off
 
 // Tells whether script error messages should be logged to
 // the server's error log or error_log. This option is thus
@@ -262,14 +262,6 @@ class SubRosa extends MT
     }
 
 
-
-
-
-
-
-
-
-
     /* *********************************************************************
      *  VIEWER METHODS
      *  The following methods are only used when a protected 
@@ -280,10 +272,9 @@ class SubRosa extends MT
         ob_start(); 
 
         $this->marker('Initializing viewer');
-
         $ctx =& $this->context();
         $ctx->template_dir
-            = SubRosa_Util::os_path( $this->config['PHPDir'], 'tmpl' );
+            = SubRosa_Util::os_path( $this->config['phpdir'], 'tmpl' );
         $ctx->stash('plugin_template_dir',  $this->template_dir);
         $ctx->stash('mt_template_dir',      $ctx->template_dir);
 
@@ -294,7 +285,7 @@ class SubRosa extends MT
             $ctx->compile_check   =  true;
             $ctx->force_compile   =  true;
             $ctx->debugging_ctrl = '';
-            $ctx->debug_tpl = SubRosa_Util::os_path($this->config['MTDir'],
+            $ctx->debug_tpl = SubRosa_Util::os_path($this->config['mtdir'],
                                     '/php/extlib/smarty/libs/debug.tpl');
         }
 
@@ -782,6 +773,37 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         print $ctx->fetch($tpl);
         
     }
+
+// ERROR HANDLER function from PHP manual
+//    function error_handler($errno, $errstr, $errfile, $errline) {
+//      switch ($errno) {
+//        case E_USER_ERROR:
+//	  echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
+//	  echo "  Fatal error on line $errline in file $errfile";
+//	  echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+//	  echo "Aborting...<br />\n";
+//	  exit(1);
+//	  break;
+//
+//	case E_USER_WARNING:
+//	  echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
+//	  break;
+//
+//	case E_USER_NOTICE:
+//	  echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
+//	  break;
+//
+//	default:
+//	  echo "Unknown error type: [$errno] $errstr<br />\n";
+//	  break;
+//	}
+//
+//	/* Don't execute PHP internal error handler */
+//	return true;
+//      }
+//
+//    return;
+//  }
 
     function error_handler($errno, $errstr, $errfile, $errline) {
 
