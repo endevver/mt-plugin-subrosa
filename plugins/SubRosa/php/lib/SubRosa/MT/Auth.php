@@ -48,8 +48,8 @@ class SubRosa_MT_Auth
 
         // Check MT cookie information instead
         list( $ucname, $ucsid, $ucpersist ) = SubRosa_Util::get_user_cookie();
-        if ($ucname) $this->mt->marker(
-                "Found mt_user cookie for $ucname with session $ucsid");
+        if ($ucname)
+            $this->mt->marker("Found mt_user cookie for $ucname with session $ucsid");
 
         // Compare user cookie and PHP session info.
         // If no PHP session exists or the session IDs match,
@@ -85,6 +85,7 @@ class SubRosa_MT_Auth
                 $this->mt->marker("Authentication OK. Commenter: "
                                   .$user->get('name'));
                 return $this;
+            }
         }
         // Fall back to user cookie session info if available
         elseif ( isset($ucsid) ) {
