@@ -97,7 +97,7 @@ class SubRosa extends MT
         $this->log('Calling MT base class');
 
         $old_error_level = $this->error_level;
-        $this->error_level = E_ALL ^ E_NOTICE;
+        $this->error_level = E_ALL ^ E_DEPRECATED;
 
         parent::MT( $blog_id,
                     SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ));
