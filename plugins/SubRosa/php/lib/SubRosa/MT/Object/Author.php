@@ -24,7 +24,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
                 $terms = $fnargs[0];
             }
             elseif (is_string($fnargs[0])) {
-                $terms = array( id => $fnargs[0]);
+                $terms = array( 'id' => $fnargs[0]);
             }
         }
         global $mt;
@@ -62,7 +62,7 @@ class SubRosa_MT_Object_Author extends SubRosa_MT_Object
     }
 
     function load_by_id($id) {
-        $terms = array( id => $id, type => 1);
+        $terms = array( 'id' => $id, type => 1);
         if (list($user) = $this->load($terms)) {
             // $user = parent::init($userdata);
             return $user;

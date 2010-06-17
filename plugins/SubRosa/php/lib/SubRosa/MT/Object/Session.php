@@ -18,7 +18,7 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
                 $terms = $fnargs[0];
             }
             elseif (is_string($fnargs[0])) {
-                $terms = array( id => $fnargs[0]);
+                $terms = array( 'id' => $fnargs[0]);
             }
         }
         global $mt;
@@ -28,8 +28,8 @@ class SubRosa_MT_Object_Session extends SubRosa_MT_Object
                 $sessdata
                    = SubRosa_Util::unpack_session_data($data['session_data']);
                 $object = new SubRosa_MT_Object_Session(array(
-                    id     => $data['session_id'],
-                    userid => $sessdata['author_id']));
+                    'id'     => $data['session_id'],
+                    'userid' => $sessdata['author_id']));
                 $objects[] = $object;
             }
             return (count($objects) == 1) ? $objects[0] : $objects;
