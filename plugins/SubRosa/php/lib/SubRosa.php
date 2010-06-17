@@ -116,6 +116,7 @@ class SubRosa extends MT
 
         date_default_timezone_set('America/Los_Angeles');
 
+	global $base_libdir;
         $this->template_dir
             = SubRosa_Util::os_path( dirname($base_libdir), '/tmpl' );
         $this->template['debug'] = 'debug-jay.tpl';
