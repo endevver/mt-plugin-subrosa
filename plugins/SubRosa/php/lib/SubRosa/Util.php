@@ -116,7 +116,7 @@ class SubRosa_Util
     }
 
     function get_cmtr_cookie( $cname='mt_commenter' ) {
-        return $this->get_user_cookie('mt_commenter');
+        return self::get_user_cookie('mt_commenter');
     }
 
     function sysdebug() {
