@@ -115,6 +115,10 @@ class SubRosa_Util
         return array(null, null, null);
     }
 
+    function get_cmtr_cookie( $cname='mt_commenter' ) {
+        return get_user_cookie('mt_commenter');
+    }
+
     function sysdebug() {
         ob_start();
         $variableSets = array(
