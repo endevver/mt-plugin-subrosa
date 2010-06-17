@@ -37,8 +37,9 @@ class SubRosa_MT_Auth
             $this->mt->marker('PHP session data matches mt_commenter cookie');
             $user = $cmtr_session->user();
             if ( is_object($user) ) {
-                $this->session( $cmtr_session );
                 $this->user( $user );
+                $this->session( $cmtr_session );
+                $phpsid = $csid;
                 $this->mt->marker("PHP session/Authentication OK. Commenter: "
                                   .$user->get('name'));
                 return $this;
@@ -62,6 +63,7 @@ class SubRosa_MT_Auth
                 if (is_object($session)) {
                     $this->user($user);
                     $this->session($session);
+                    $phpsid = $ucsid;
                     $this->mt->marker("PHP session/Authentication OK. User: "
                                       .$user->get('name'));
                     return $this;
@@ -71,17 +73,18 @@ class SubRosa_MT_Auth
 
         // If, at this point, we have a PHP session,
         // clear it becuse it's a stale session.
-        if (isset($phpsid)) {
-            SubRosa_Util::phpsession(false);
-            $this->mt->marker('Killed stale PHP session: '.$phpsid);
-        }
+        // if (isset($phpsid)) {
+        //     SubRosa_Util::phpsession(false);
+        //     $this->mt->marker('Killed stale PHP session: '.$phpsid);
+        // }
         
         // Fall back to commenter cookie session info if available
         if ( isset($csid) ) {
             $user = $cmtr_session->user();
             if ( is_object($user) ) {
-                $this->session( $cmtr_session );
                 $this->user( $user );
+                $this->session( $cmtr_session );
+                $phpsid = $csid;
                 $this->mt->marker("Authentication OK. Commenter: "
                                   .$user->get('name'));
                 return $this;
@@ -94,6 +97,7 @@ class SubRosa_MT_Auth
             if (is_object($user) && is_object($session)) {
                 $this->user($user);
                 $this->session($session);
+                $phpsid = $ucsid;
                 $this->mt->marker("Authentication OK. User: "
                                   .$user->get('name'));
                 return $this;
@@ -110,6 +114,7 @@ class SubRosa_MT_Auth
         $phpname = SubRosa_Util::phpsession('name');
         $phpsid  = SubRosa_Util::phpsession('session_id');
         $this->mt->marker("PHP Session info: name: $phpname, sid: $phpsid");
+        return ($phpname, $phpsid);
     }
 
     function cmtr_session() {
