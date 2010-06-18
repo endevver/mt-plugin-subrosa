@@ -12,15 +12,34 @@
 //    * Deny the request outright, with an optional error page.
 //    * Modify the request with a redirect (e.g. to a login page)
 
-$subrosa_config = init_subrosa_config();
-$cfg            =& $subrosa_config;
+# http://www.calcharters.org/2010/06/mt-preview-d1c087f22262e5264c6b57e21ae1c84edeccd02d.html?083153"
+if (! preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/', $_SERVER['REQUEST_URI'])) {
 
-require_once( $cfg['subrosa_path'] );
+    $subrosa_config = init_subrosa_config();
+    $cfg            =& $subrosa_config;
 
-$mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
-$mt->debugging = true;
-$mt->bootstrap();
+    require_once( $cfg['subrosa_path'] );
 
+    apache_setenv('SUBROSA_EVALUATED', 1);
+    $_SERVER['SUBROSA_EVALUATED'] = 1;
+
+    $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
+    if (isset($_GET['debug'])) $mt->debugging = true;
+    $mt->bootstrap();
+    $mt->log_dump(array('noscreen' => 1));
+
+    if ($_GET['blog_id']) {
+      //    if ( preg_match ( '/\.(php|html)/', $mt->request) ) {
+      //        include(SubRosa_Util::os_path($mt->site_path, $mt->request));
+      //    }
+      //    else {
+      //        $file_info = apache_lookup_uri($mt->request."?contenttype=1");
+      //        header('Content-Type: ' . $file_info->content_type);
+      //        virtual($mt->request);
+      //        exit(0);
+      //    }
+    }
+ }
 
 function init_subrosa_config() {
     
