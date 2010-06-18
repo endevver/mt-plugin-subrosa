@@ -68,25 +68,30 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Execute the decision tree...
         //
         // Everyone is_authorized for public documents
-        if ( is_null($e_access_type) )              return true;
+        if ( is_null($e_access_type) ) return true;
+
         $mt->marker('Not public');
 
         // Non-public documents require authentication
-        if ( ! $user )                              return $this->not_authorized();
+        if ( ! $user ) return $this->not_authorized();
+
         $mt->marker('Have authenticated user with $u_status: '.$u_status);
 
         // Non-public documents require active or complimentary membership
         if ( ($u_status != 'Active Member') && ($u_status != 'Complimentary') ) {
             return $this->not_authorized();
         }
+
         $mt->marker('User is active');
 
          // Staff can see anything
-         if ( $u_is_staff )                         return true;
+         if ( $u_is_staff ) return true;
+
         $mt->marker('User is not staff');
 
         // Only Staff can view Staff-only documents
-        if ( $e_access_type == 'CCSA Staff' )       return $this->not_authorized();
+        if ( $e_access_type == 'CCSA Staff' ) return $this->not_authorized();
+
         $mt->marker('Document is not staff only');
 
         // Only members in Content programs can see program-specific docs
@@ -104,6 +109,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     }
 
     public function not_authorized() {
+        global $mt;
+        $mt->marker('NOT AUTHORIZED!!');
         $user =& $mt->auth->user;  // Can be null if not auth'd'
         if ( $this->is_asset_request ) {
             return isset($user) ? error_page() : login_page();
@@ -116,8 +123,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function login_page() {
         $url_data =& $this->url_data;
         if ( isset($this->entry) &&  isset($url_data['fileinfo'])) {
-            $url = $url_data['fileinfo']['fileinfo_url'];
-            header("Location: $url");
+            header( 'Location: '
+                   .$url_data['fileinfo']['fileinfo_url']);
             exit;
         }
         else {
