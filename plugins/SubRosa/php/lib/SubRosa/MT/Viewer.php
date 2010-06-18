@@ -9,23 +9,14 @@ include_once("Smarty.class.php");
 require_once('MTViewer.php');
 class SubRosa_MT_Viewer extends MTViewer {
 
-    // function register_tag_handler($tag, $fn, $type) {
-    //     global $mt;
-    //     $mt->marker('In SubRosa_MT_Viewer::register_tag_handler with '.$tag);
-    //     parent::register_tag_handler($tag, $fn, $type);
-    // }
-    // function add_container_tag($tag, $fn = null) {
-    //     global $mt;
-    //     $mt->marker('In SubRosa_MT_Viewer::add_container_tag with '.$tag);
-    //     return $this->register_tag_handler($tag, $fn, 'block');
-    // }
     function add_tag($tag, $fn) {
         global $mt;
         $mt->marker('In SubRosa_MT_Viewer::add_tag with '.$tag);
 
         // Check for a trailing question mark and get rid of it
-        preg_replace( '/\?$/', '', $tag, -1, $has_question_mark );
-        if ( $has_question_mark ) $mt->marker('Removed question mark: '.$tag);
+        $tag = preg_replace( '/\?$/', '', $tag, -1, $has_question_mark );
+        if ( $has_question_mark ) 
+          $mt->marker($tag.': Stripped question mark. Processing as block tag.');
 
         // Tags with trailing question marks should be block tags instead
         return $this->register_tag_handler(
