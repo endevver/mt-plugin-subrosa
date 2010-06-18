@@ -14,68 +14,68 @@ if (isset($mt->config['PluginSwitch']['SubRosa/SubRosa.pl'])) {
 define('SUBROSA_ENABLED', 1);
 
 $ctx->add_tag(
-    'MTSubRosaUserName',
+    'subrosausername',
     'smarty_function_MTSubRosaUserName'
 );
 $ctx->add_tag(
-    'MTSubRosaUserDisplayName',
+    'subrosauserdisplayname',
     'smarty_function_MTSubRosaUserDisplayName'
 );
 $ctx->add_tag(
-    'MTSubRosaUserID', 
+    'subrosauserid', 
     'smarty_function_MTSubRosaUserID'
 );
 $ctx->add_tag(
-    'MTSubRosaUserEmail', 
+    'subrosauseremail', 
     'smarty_function_MTSubRosaUserEmail'
 );
 $ctx->add_tag(
-    'MTSubRosaUserURL',
+    'subrosauserurl',
     'smarty_function_MTSubRosaUserURL'
 );
 $ctx->add_tag(
-    'MTSubRosaUserProfileURL',
+    'subrosauserprofileurl',
     'smarty_function_MTSubRosaUserProfileURL'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdatePermalink',
+    'subrosaupdatepermalink',
     'smarty_function_MTSubRosaUpdatePermalink'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdateDate',
+    'subrosaupdatedate',
     'smarty_function_MTSubRosaUpdateDate'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdateEntryTitle',
+    'subrosaupdateentrytitle',
     'smarty_function_MTSubRosaUpdateEntryTitle'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdateAuthor',
+    'subrosaupdateauthor',
     'smarty_function_MTSubRosaUpdateAuthor'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdateBlogName',
+    'subrosaupdateblogname',
     'smarty_function_MTSubRosaUpdateBlogName'
 );
 $ctx->add_tag(
-    'MTSubRosaUpdateBlogURL',
+    'subrosaupdateblogurl',
     'smarty_function_MTSubRosaUpdateBlogURL'
 );
 
 $ctx->add_conditional_tag(
-    'MTSubRosaIfAuthorized',
+    'subrosaifauthorized',
     'smarty_block_MTSubRosaIfAuthorized'
 );
 $ctx->add_container_tag(
-    'MTSubRosaUpdates',
+    'subrosaupdates',
     'smarty_block_MTSubRosaUpdates'
 );
 $ctx->add_conditional_tag(
-    'MTSubRosaIfUpdateIsComment',
+    'subrosaifupdateiscomment',
     'smarty_block_MTSubRosaIfUpdateIsComment'
 );
 $ctx->add_conditional_tag(
-    'MTSubRosaIfUpdateIsEntry',
+    'subrosaifupdateisentry',
     'smarty_block_MTSubRosaIfUpdateIsEntry'
 );
 
