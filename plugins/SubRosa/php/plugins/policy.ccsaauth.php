@@ -77,8 +77,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         $mt->marker('Have authenticated user with $u_status: '.$u_status);
 
-        // Non-public documents require active or complimentary membership
-        if ( ($u_status != 'Active Member') && ($u_status != 'Complimentary') ) {
+        // Non-public documents require (A)ctive or (C)o(M)plimentary
+        if ( ($u_status != 'A') && ($u_status != 'CM') ) {
             return $this->not_authorized();
         }
 
