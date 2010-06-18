@@ -778,6 +778,33 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         
     }
 
+    function &context() {
+        static $ctx;
+        if (isset($ctx)) return $ctx;
+
+        require_once('SubRosa/MT/Viewer.php');
+        $ctx = new SubRosa_MT_Viewer($this);
+        $ctx->mt =& $this;
+        $mtphpdir = $this->config('PHPDir');
+        $mtlibdir = $this->config('PHPLibDir');
+        $ctx->compile_check = 1;
+        $ctx->caching = false;
+        $ctx->plugins_dir[] = $mtlibdir;
+        $ctx->plugins_dir[] = $mtphpdir . DIRECTORY_SEPARATOR . "plugins";
+        if ($this->debugging) {
+            $ctx->debugging_ctrl = 'URL';
+            $ctx->debug_tpl = $mtphpdir . DIRECTORY_SEPARATOR .
+                'extlib' . DIRECTORY_SEPARATOR .
+                'smarty' . DIRECTORY_SEPARATOR . "libs" . DIRECTORY_SEPARATOR .
+                'debug.tpl';
+        }
+        #if (isset($this->config('SafeMode')) && ($this->config('SafeMode'))) {
+        #    // disable PHP support
+        #    $ctx->php_handling = SMARTY_PHP_REMOVE;
+        #}
+        return $ctx;
+    }
+
 // ERROR HANDLER function from PHP manual
 //    function error_handler($errno, $errstr, $errfile, $errline) {
 //      switch ($errno) {
