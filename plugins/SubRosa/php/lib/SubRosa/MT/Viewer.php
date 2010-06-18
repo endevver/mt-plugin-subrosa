@@ -15,8 +15,10 @@ class SubRosa_MT_Viewer extends MTViewer {
 
         // Check for a trailing question mark and get rid of it
         $tag = preg_replace( '/\?$/', '', $tag, -1, $has_question_mark );
-        if ( $has_question_mark ) 
-          $mt->marker($tag.': Stripped question mark. Processing as block tag.');
+        if ( $has_question_mark ) {
+              $mt->marker($tag. ': Stripped traiing "?". '
+                              . 'Processing as block tag.');
+        }
 
         // Tags with trailing question marks should be block tags instead
         return $this->register_tag_handler(
