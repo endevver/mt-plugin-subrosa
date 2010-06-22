@@ -95,7 +95,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $mt->marker('Document is not staff only');
 
         // Only members in Content programs can see program-specific docs
-        if ( $e_program ) {
+        // Addendum: Complementary members can also see this content
+        if ( $e_program && ( $u_status != 'CM' )) {
             foreach ( explode(',', $e_program) as $program ) {
                 if ($program == 'Charter Launch') $program = 'chl';
                 $user_field = 'private_ccsa_member_'.strtolower($program);

@@ -34,7 +34,11 @@ require_once( 'SubRosa/Util.php' );
 
 // Derive the paths to the SubRosa and MT PHP libs directory
 $base_libdir = dirname( __FILE__ );
-$mt_libdir   = SubRosa_Util::os_path( $cfg['mt_dir'], 'php', 'lib' );
+  // In case config hasn't be read, derive the MT_DIR
+  // MT_DIR/plugins/SubRosa/php/lib/SubRosa.php
+$mt_dir = isset($cfg) ? $cfg['mt_dir']
+                      : dirname(dirname(dirname(dirname($base_libdir))));
+$mt_libdir   = SubRosa_Util::os_path( $mt_dir, 'php', 'lib' );
 
 // include_path: Prepend SubRosa and MT PHP lib and extlib directories
 $include_path = join( ':',
