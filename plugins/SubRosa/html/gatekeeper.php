@@ -33,7 +33,6 @@ function handle_request() {
     $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
     if (isset($_GET['debug'])) $mt->debugging = true;
     $mt->bootstrap();
-    $mt->log_dump(array('noscreen' => 1));
 
     if ($_GET['blog_id']) {
       //    if ( preg_match ( '/\.(php|html)/', $mt->request) ) {

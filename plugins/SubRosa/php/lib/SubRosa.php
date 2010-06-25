@@ -265,7 +265,19 @@ class SubRosa extends MT
         $policy       = new $policy_class();
         $this->policy =& $policy;
 
-        $policy->check_request( $entry_id );
+        if ( $policy->check_request( $entry_id ) === true ) {
+            $file = $_SERVER['REQUEST_URI'];
+            $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
+            header('Content-Type: ' . $file_info->content_type);
+            // $this->marker(var_dump(array(
+            //     'REQ_URI'      => $file,
+            //     'file_info'    => $file_info,
+            //     'content_type' => $file_info->content_type,
+            // )));
+            virtual($file);
+            // $this->log_dump(array('noscreen' => 1));
+            die();
+        }
         $this->log_dump(array('noscreen' => 1));
     }
 
