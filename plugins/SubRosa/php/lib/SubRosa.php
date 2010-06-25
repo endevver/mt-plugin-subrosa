@@ -268,18 +268,18 @@ class SubRosa extends MT
         
         if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
             && ($req_check === true)) {
-
             $file      = $_SERVER['REQUEST_URI'];
             $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
-            header('Content-Type: ' . $file_info->content_type);
+            header('content-type: ' . $file_info->content_type);
             $this->marker(print_r(array(
                 'REQ_URI'      => $file,
                 'file_info'    => $file_info,
                 'content_type' => $file_info->content_type,
             ), true));
-            virtual($file);
+
             $this->log_dump(array('noscreen' => 1));
-            exit;
+            virtual($file_info->uri);
+            exit(0);
         }
         $this->log_dump(array('noscreen' => 1));
     }

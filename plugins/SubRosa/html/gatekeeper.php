@@ -33,18 +33,6 @@ function handle_request() {
     $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
     if (isset($_GET['debug'])) $mt->debugging = true;
     $mt->bootstrap();
-
-    if ($_GET['blog_id']) {
-      //    if ( preg_match ( '/\.(php|html)/', $mt->request) ) {
-      //        include(SubRosa_Util::os_path($mt->site_path, $mt->request));
-      //    }
-      //    else {
-      //        $file_info = apache_lookup_uri($mt->request."?contenttype=1");
-      //        header('Content-Type: ' . $file_info->content_type);
-      //        virtual($mt->request);
-      //        exit(0);
-      //    }
-    }
 }
 
 function init_subrosa_config() {
