@@ -264,19 +264,22 @@ class SubRosa extends MT
         $policy_class = SUBROSA_POLICY;
         $policy       = new $policy_class();
         $this->policy =& $policy;
+        $req_check = $policy->check_request( $entry_id );
+        
+        if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
+            && ($req_check === true)) {
 
-        if ( $policy->check_request( $entry_id ) === true ) {
-            $file = $_SERVER['REQUEST_URI'];
+            $file      = $_SERVER['REQUEST_URI'];
             $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
             header('Content-Type: ' . $file_info->content_type);
-            // $this->marker(var_dump(array(
-            //     'REQ_URI'      => $file,
-            //     'file_info'    => $file_info,
-            //     'content_type' => $file_info->content_type,
-            // )));
+            $this->marker(print_r(array(
+                'REQ_URI'      => $file,
+                'file_info'    => $file_info,
+                'content_type' => $file_info->content_type,
+            ), true));
             virtual($file);
-            // $this->log_dump(array('noscreen' => 1));
-            die();
+            $this->log_dump(array('noscreen' => 1));
+            exit;
         }
         $this->log_dump(array('noscreen' => 1));
     }
