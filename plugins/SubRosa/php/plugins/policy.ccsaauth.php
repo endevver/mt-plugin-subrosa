@@ -209,9 +209,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $assets = SubRosa_MT_Object_Asset::load(
             array('file_name' => basename( urldecode($this->request) ))
         );
-        $mt->marker('Assets loaded: '.print_r($assets, true));
-                $mt->log_dump(array('noscreen' => 1));
-        exit;
+        // $mt->marker('Assets loaded: '.print_r($assets, true));
+        // $mt->log_dump(array('noscreen' => 1));
 
         if ( ! isset( $assets )) return;
 
@@ -233,23 +232,24 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         if ( ! isset( $asset )) return;
 
-        require_once('SubRosa/MT/Object/ObjectAsset.php');
-        $oassets = SubRosa_MT_Object_ObjectAsset::load(
-            array(
-                'object_ds' => 'entry'
-                // 'blog_id'   => $asset->get('blog_id')
-                // 'asset_id'  => $asset->get('id')
-            )
-        );
+        return; // FIXME STOPPED HERE -- NEED TO EVAL ALL OBJECTASSETS
 
-        $mt->marker('OAssets loaded from asset ID '.$asset->get('id').' in blog ID '.$asset->get('blog_id').': '.print_r($oassets, true));
-        $mt->log_dump(array('noscreen' => 1));
-exit;
-        if ( isset( $oasset )) {
-            $entry  =& $this->resolve_entry( $oasset->object_id );
-            if ( isset( $entry )) $this->is_asset_request = 1;
-            return $entry;
-        }
+        require_once('SubRosa/MT/Object/ObjectAsset.php');
+        $oaterms = array(
+            'object_ds' => 'entry',
+            'blog_id'   => $asset->get('blog_id'),
+            'asset_id'  => $asset->get('id')
+        );
+        $mt->marker('Terms: '.print_r($oaterms, true));
+        $oassets = SubRosa_MT_Object_ObjectAsset::load( $oaterms );
+        // $mt->marker('OAssets loaded from asset ID '.$asset->get('id').' in blog ID '.$asset->get('blog_id').': '.print_r($oassets, true));
+        // $mt->log_dump(array('noscreen' => 1));
+
+        if ( ! isset( $oassets )) return;
+
+        $entry  =& $this->resolve_entry( $oassets->object_id );
+        if ( isset( $entry )) $this->is_asset_request = 1;
+        return $entry;
     }
 }
 
