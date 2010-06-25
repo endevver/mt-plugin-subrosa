@@ -94,18 +94,22 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         $mt->marker('Document is not staff only');
 
+        // Content does NOT require special program access, so let the user
+        // read the document.
+        if ( ! $e_program ) return true;
+
         // Only members in Content programs can see program-specific docs
         // Addendum: Complementary members can also see this content
-        if ( $e_program && ( $u_status != 'CM' )) {
-            foreach ( explode(',', $e_program) as $program ) {
-                if ($program == 'Charter Launch') $program = 'chl';
-                $user_field = 'private_ccsa_member_'.strtolower($program);
-                if (isset( $user[$user_field] ))
-                    return true;
-            }
+        // Correction: Error in understanding of requirements, CM users do not get
+        //             any additional privs. Simply a synonym to "Active"
+        foreach ( explode(',', $e_program) as $program ) {
+            if ($program == 'Charter Launch') $program = 'chl';
+            $user_field = 'private_ccsa_member_'.strtolower($program);
+            if (isset( $user[$user_field] ))
+                return true;
         }
 
-        // Default to unauthorized to be safe
+        // Return not authorized just to be safe
         return $this->not_authorized();
     }
 
