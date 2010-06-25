@@ -266,7 +266,7 @@ class SubRosa extends MT
         $this->policy =& $policy;
         $req_check = $policy->check_request( $entry_id );
         
-        if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
+        if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.175')
             && ($req_check === true)) {
             $file      = $_SERVER['REQUEST_URI'];
             $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
@@ -276,7 +276,6 @@ class SubRosa extends MT
                 'file_info'    => $file_info,
                 'content_type' => $file_info->content_type,
             ), true));
-
             $this->log_dump(array('noscreen' => 1));
             virtual($file_info->uri);
             exit(0);
