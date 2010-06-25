@@ -2,7 +2,7 @@
 
 // SubRosa request gatekeeper script
 //
-// This script bootstraps the SubRosa framework, inspects the 
+// This script bootstraps the SubRosa framework, inspects the
 // incoming request and handles it based on available information
 // and specified policy.  It can handle requests for both statically
 // and dynamically generated content and does one of the following:
@@ -11,6 +11,14 @@
 //      requested resource.
 //    * Deny the request outright, with an optional error page.
 //    * Modify the request with a redirect (e.g. to a login page)
+
+// TEST CODE ----------------
+// if ($_GET['cap']) {
+//     print_r($_GET);
+//     exit;
+//     Array ( [blog_id] => 1 [file] => /var/www/vhosts/calcharters.org/httpdocs/StrategicSnapshot.pdf [uri] => /StrategicSnapshot.pdf [eval] => [cap] => StrategicSnapshot.pdf )
+// }
+// --------------------------
 
 // Handle mt-preview URLs by not handling them
 // /2010/06/mt-preview-d1c087f22262e5264c6b57e21ae1c84edeccd02d.html?083153
@@ -26,30 +34,44 @@ if (! preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/',
 
 function handle_request() {
     global $subrosa_config, $cfg, $mt;
-
     apache_setenv('SUBROSA_EVALUATED', 1);
-    $_SERVER['SUBROSA_EVALUATED'] = 1;
+    apache_note('SUBROSA_EVALUATED',  '1');
+    $_SERVER['SUBROSA_EVALUATED']    = 1;
 
     $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
     if (isset($_GET['debug'])) $mt->debugging = true;
     $mt->bootstrap();
-    $mt->log_dump(array('noscreen' => 1));
+}
 
-    if ($_GET['blog_id']) {
-      //    if ( preg_match ( '/\.(php|html)/', $mt->request) ) {
-      //        include(SubRosa_Util::os_path($mt->site_path, $mt->request));
-      //    }
-      //    else {
-      //        $file_info = apache_lookup_uri($mt->request."?contenttype=1");
-      //        header('Content-Type: ' . $file_info->content_type);
-      //        virtual($mt->request);
-      //        exit(0);
-      //    }
-    }
+function init_php_ini() {
+
+  // Even when display_errors is on, errors that occur
+  // during PHP's startup sequence are not displayed.
+  // It's strongly recommended to keep display_startup_errors
+  // off, except for debugging.
+  ini_set('display_startup_errors', true); // off
+
+  // This determines whether errors should be printed to the screen as part of
+  // the output or if they should be hidden from the user.
+  //  Note: Although display_errors may be set at runtime (with ini_set()), it //
+  //  won't have any affect if the script has fatal errors. This is because the
+  //  desired runtime action does not get executed.
+  ini_set('display_errors', isset($_GET['debug']) ? true : false);
+
+  // Tells whether script error messages should be logged to
+  // the server's error log or error_log. This option is thus
+  // server-specific.
+  ini_set('log_errors', true);           // on
+
+  // Enabling this setting prevents attacks involved passing
+  // session ids in URLs. Defaults to true in PHP 5.3.0
+  ini_set('session.use_only_cookies', true);
+
 }
 
 function init_subrosa_config() {
-    
+
+    init_php_ini();
     require('subrosa_config.php');
     $cfg =& $config;
 
@@ -63,8 +85,8 @@ function init_subrosa_config() {
         $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
 
     # Append mt_dir to subrosa_path to create an absolute filepath
-    $cfg['subrosa_path'] = $cfg['mt_dir'] 
-                         . DIRECTORY_SEPARATOR 
+    $cfg['subrosa_path'] = $cfg['mt_dir']
+                         . DIRECTORY_SEPARATOR
                          . $cfg['subrosa_path'];
     return $cfg;
 }
