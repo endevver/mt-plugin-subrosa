@@ -176,6 +176,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // resolve_url() gives us an array of the blog, 
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
+
         if ( isset( $url_data )) {
           //$mt->log('Got URL data for entry'); //.print_r($url_data, true));
             $mt->log('Got URL data for entry: '.print_r($url_data, true));
@@ -206,7 +207,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Load all assets with the same filename
         require_once('SubRosa/MT/Object/Asset.php');
         $assets = SubRosa_MT_Object_Asset::load(
-            array('file_name' => basename( $this->request ))
+            array('file_name' => basename( urldecode($this->request) ))
         );
 
         // Go through returned objects trying to match the REQUEST_URI
@@ -233,6 +234,9 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         if ( isset( $oasset )) {
             $entry  =& $this->resolve_entry( $oasset->object_id );
             return $entry;
+        }
+        else {
+            $this->is_asset_request = 0;
         }
     }
 }
