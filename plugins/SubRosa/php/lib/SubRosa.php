@@ -265,6 +265,7 @@ class SubRosa extends MT
         $policy       = new $policy_class();
         $this->policy =& $policy;
         $req_check = $policy->check_request( $entry_id );
+<<<<<<< HEAD
         
         if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.175')
             && ($req_check === true)) {
@@ -279,6 +280,25 @@ class SubRosa extends MT
             $this->log_dump(array('noscreen' => 1));
             virtual($file_info->uri);
             exit(0);
+=======
+
+        // Testing direct access by Jay
+        if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
+            && ($req_check === true)) {
+            $file      = $_SERVER['REQUEST_URI'];
+            $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
+            if (! preg_match('/\.(php|html)$/', $file_info->uri)) {
+                header('content-type: ' . $file_info->content_type);
+                $this->marker(print_r(array(
+                    'REQ_URI'      => $file,
+                    'file_info'    => $file_info,
+                    'content_type' => $file_info->content_type,
+                ), true));
+                $this->log_dump(array('noscreen' => 1));
+                virtual($file_info->uri);
+                exit(0);
+            }
+>>>>>>> 443ab5e4ba8242f3ce8a77de95c94058eabeb20a
         }
         $this->log_dump(array('noscreen' => 1));
     }

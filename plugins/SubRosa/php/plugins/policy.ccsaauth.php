@@ -94,18 +94,22 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         $mt->marker('Document is not staff only');
 
+        // Content does NOT require special program access, so let the user
+        // read the document.
+        if ( ! $e_program ) return true;
+
         // Only members in Content programs can see program-specific docs
         // Addendum: Complementary members can also see this content
-        if ( $e_program && ( $u_status != 'CM' )) {
-            foreach ( explode(',', $e_program) as $program ) {
-                if ($program == 'Charter Launch') $program = 'chl';
-                $user_field = 'private_ccsa_member_'.strtolower($program);
-                if (isset( $user[$user_field] ))
-                    return true;
-            }
+        // Correction: Error in understanding of requirements, CM users do not get
+        //             any additional privs. Simply a synonym to "Active"
+        foreach ( explode(',', $e_program) as $program ) {
+            if ($program == 'Charter Launch') $program = 'chl';
+            $user_field = 'private_ccsa_member_'.strtolower($program);
+            if (isset( $user[$user_field] ))
+                return true;
         }
 
-        // Default to unauthorized to be safe
+        // Return not authorized just to be safe
         return $this->not_authorized();
     }
 
@@ -172,6 +176,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // resolve_url() gives us an array of the blog, 
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
+
         if ( isset( $url_data )) {
           //$mt->log('Got URL data for entry'); //.print_r($url_data, true));
             $mt->log('Got URL data for entry: '.print_r($url_data, true));
@@ -196,40 +201,55 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             }
         }
 
-        // We have a direct request for an asset
-        $this->is_asset_request = 1;
+        // Looks like we may have a direct request for an asset
+        $this->is_asset_request = 0;
 
         // Load all assets with the same filename
         require_once('SubRosa/MT/Object/Asset.php');
         $assets = SubRosa_MT_Object_Asset::load(
-            array('file_name' => basename( $this->request ))
+            array('file_name' => basename( urldecode($this->request) ))
         );
+        // $mt->marker('Assets loaded: '.print_r($assets, true));
+        // $mt->log_dump(array('noscreen' => 1));
+
+        if ( ! isset( $assets )) return;
 
         // Go through returned objects trying to match the REQUEST_URI
         // to the asset URL. Necessary to avoid matching twice, once
         // normally and once with %r in place of the blog URL.
-        $pattern = "/${$this->request}$/";
-        foreach ( $assets as $a ) {
-            if (preg_match( $pattern, $a->url )) {
-                $asset = $a;
-                break;
+        if ( is_object($assets) ) {
+            $asset = $assets; 
+        }
+        else {
+            $pattern = "/${$this->request}$/";
+            foreach ( $assets as $a ) {
+                if (preg_match( $pattern, $a->url )) {
+                    $asset = $a;
+                    break;
+                }
             }
         }
+
         if ( ! isset( $asset )) return;
 
-        require_once('SubRosa/MT/Object/ObjectAsset.php');
-        $oasset = SubRosa_MT_Object_Asset::load(
-            array(
-                'object_ds' => 'entry',
-                'blog_id'   => $asset->blog_id,
-                'asset_id'  => $asset->id
-            )
-        );
+        return; // FIXME STOPPED HERE -- NEED TO EVAL ALL OBJECTASSETS
 
-        if ( isset( $oasset )) {
-            $entry  =& $this->resolve_entry( $oasset->object_id );
-            return $entry;
-        }
+        require_once('SubRosa/MT/Object/ObjectAsset.php');
+        $oaterms = array(
+            'object_ds' => 'entry',
+            'blog_id'   => $asset->get('blog_id'),
+            'asset_id'  => $asset->get('id')
+        );
+        $mt->marker('Terms: '.print_r($oaterms, true));
+        $oassets = SubRosa_MT_Object_ObjectAsset::load( $oaterms );
+        // $mt->marker('OAssets loaded from asset ID '.$asset->get('id').' in blog ID '.$asset->get('blog_id').': '.print_r($oassets, true));
+        // $mt->log_dump(array('noscreen' => 1));
+
+        if ( ! isset( $oassets )) return;
+
+        $entry  =& $this->resolve_entry( $oassets->object_id );
+        if ( isset( $entry )) $this->is_asset_request = 1;
+        return $entry;
     }
 }
 
