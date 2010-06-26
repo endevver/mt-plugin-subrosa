@@ -1,16 +1,18 @@
 <?php
-
-// SubRosa request gatekeeper script
-//
-// This script bootstraps the SubRosa framework, inspects the
-// incoming request and handles it based on available information
-// and specified policy.  It can handle requests for both statically
-// and dynamically generated content and does one of the following:
-//
-//    * Facilitates delivery (and compilation, if needed) of the
-//      requested resource.
-//    * Deny the request outright, with an optional error page.
-//    * Modify the request with a redirect (e.g. to a login page)
+/**
+ * SubRosa request gatekeeper script
+ *
+ * This script bootstraps the SubRosa framework, inspects the
+ * incoming request and handles it based on available information
+ * and specified policy.  It can handle requests for both statically
+ * and dynamically generated content and does one of the following:
+ * 
+ *    - Facilitates delivery (and compilation, if needed) of the
+ *      requested resource.
+ *    - Deny the request outright, with an optional error page.
+ *    - Modify the request with a redirect (e.g. to a login page)
+ * 
+ */
 
 // TEST CODE ----------------
 // if ($_GET['cap']) {

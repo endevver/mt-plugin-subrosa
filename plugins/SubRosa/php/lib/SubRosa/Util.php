@@ -55,6 +55,19 @@ class SubRosa_Util
         );
     }
 
+    function is_assoc_array($array) {
+        if ( ! is_array($array) ) return false; // Not an array
+        if ( count($array) == 0 ) return true;  // Empty is assoc
+        // See entire discussion thread on
+        // http://us.php.net/manual/en/function.is-array.php#98305
+        return(
+            0 !== count(
+                        array_diff_key( $array, 
+                                        array_keys( array_keys($array) ))
+                   )
+        );
+    } 
+
     function unpack_session_data($sdata) {
         global $mt;
         //$mt->marker();

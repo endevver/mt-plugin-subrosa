@@ -27,4 +27,18 @@ $config['site_path']            = $_SERVER['DOCUMENT_ROOT'];
 $config['log_output']       = $config['site_path']
                             . DIRECTORY_SEPARATOR
                             . 'subrosa_debug.log';
+
+
+/************************************************************************
+ *  DO NOT EDIT BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU'RE DOING
+ */ 
+require_once(
+    $config['mt_dir'] . DIRECTORY_SEPARATOR . $config['subrosa_path']
+);
+
+$mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
+if (isset($_GET['debug'])) $mt->debugging = true;
+$mt->bootstrap();
+
+
 ?>
