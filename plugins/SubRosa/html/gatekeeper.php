@@ -37,12 +37,11 @@ function handle_request() {
     apache_setenv('SUBROSA_EVALUATED', 1);
     apache_note('SUBROSA_EVALUATED',  '1');
     $_SERVER['SUBROSA_EVALUATED']    = 1;
+    $_SESSION['SUBROSA_EVALUATED']   = 1;
 
     $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
     if (isset($_GET['debug'])) $mt->debugging = true;
     $mt->bootstrap();
-<<<<<<< HEAD
-=======
 }
 
 function init_php_ini() {
@@ -69,7 +68,6 @@ function init_php_ini() {
   // session ids in URLs. Defaults to true in PHP 5.3.0
   ini_set('session.use_only_cookies', true);
 
->>>>>>> 0318f3c62334add03ac785730e7b0243d99af41d
 }
 
 function init_subrosa_config() {

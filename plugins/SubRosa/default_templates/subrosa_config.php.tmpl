@@ -1,22 +1,30 @@
 <?php
 
-$config['controller_blog_id'] = <$MTBlogID$>;
-$config['mt_dir'] = '/Users/jay/Sites/jay.local/html/ccsa/mt';
-$config['subrosa_path'] = 'plugins/SubRosa/php/SubRosa.class';
-$config['site_path'] = '<$MTBlogSitePath$>';
-//$config['log_output'] = '<$MTBlogSitePath$>php_debug.log';
-$config['exclude_blogs'] = array(1,2,9,14);
-$config['notify_user'] = 'blah';
-$config['notify_pass'] = 'blahpass';
+/**
+ * mt_dir - Absolute filesystem path to your Melody/MT directory (MT_HOME).
+ *          This is the directory containing mt-config.cgi.
+ */
+$config['mt_dir']               = '/Users/jay/Sites/jay.local/html/ccsa/mt';
 
+/** 
+ *  subrosa_path - Filesystem path to the main SubRosa class file
+ *                 relative to your Melody/MT directory. You shouldn't
+ *                 need to change this unless you install SubRosa in a
+ *                 non-standard way.
+ */
+$config['subrosa_path']         = 'plugins/SubRosa/php/lib/SubRosa.php';
 
-<MTBlogs>
-$config['blog_id'][<$MTBlogID$>]
-    = array(<MTAuthors><$MTAuthorID$>,</MTAuthors>);
+/** 
+ *  site_path - Absolute filesystem path to your site. The default is almost
+ *              always correct and you should not change this unless you know
+ *              what you're doing.
+ */ 
+$config['site_path']            = $_SERVER['DOCUMENT_ROOT'];
 
-$config['blog_path']['<$MTBlogRelativeURL regex="s#/$##"$>']
-    = array(<MTAuthors><$MTAuthorID$>,</MTAuthors>);
-
-</MTBlogs>
-
+/** 
+ *  log_output - Absolute filesystem path to an optional logfile
+ */ 
+$config['log_output']       = $config['site_path']
+                            . DIRECTORY_SEPARATOR
+                            . 'subrosa_debug.log';
 ?>
