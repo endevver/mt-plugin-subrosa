@@ -437,7 +437,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      * @return  bool    True if not Public access type
      **/
-    public function is_protected() {
+    public function is_protected( $entry_id=null ) {
         // $this->access_type() inspects $this->entries and returns
         // the strictest access policy found amongst them.  
         $e_access_type  =  $this->access_type(); 
