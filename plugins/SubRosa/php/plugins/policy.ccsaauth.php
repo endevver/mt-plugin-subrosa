@@ -19,6 +19,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         'Members Only'              => 1,
         'Public'                    => 0,
     );
+    var $force_is_authorized;
 
     function __construct() {
         global $mt;
@@ -282,12 +283,12 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             $entry =& $mt->db->fetch_entry($entry_id);
 
         // Try to resolve entry via fileinfo lookup of REQUEST_URI
-        if ( !isset($entry) ) 
+        if ( !isset($entry) ) {
             $entry =& $this->resolve_entry_from_fileinfo();
 
         // Assume that current request is for an asset
         // Try to resolve the entry or entries from the asset association(s)
-        if ( ! isset($entry) ) {
+        if ( ! isset($entry) && !isset($this->force_response()) ) {
             $entries =& $this->resolve_entries_from_asset();
             $this->is_asset_request = isset($entries);
         }
@@ -326,13 +327,14 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         // Page-class entries are never protected
         if ($url_data['fileinfo']['fileinfo_archive_type'] == 'Page') {
-            return;
+            return $this->force_response( array('authorized' => true ) );
         }
 
         // If this is not an entry archive return without an entry
         $template_type = $url_data['template']['template_type'];
-        if ( isset($template_type) && ( $template_type != 'individual' ))
-            return;
+        if ( isset($template_type) && ( $template_type != 'individual' )) {
+            return $this->force_response( array('authorized' => true ) );
+        }
 
         // If the fileinfo gives us an entry ID, load and return it
         $entry_id      = $url_data['fileinfo']['fileinfo_entry_id'];
@@ -352,7 +354,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
                     . print_r($url_data, true));
     } // end func resolve_entry_from_fileinfo
 
-
+    private function force_response( $arr=null ) {
+        if ( is_null($arr) ) return $this->force_is_authorized;
+        $this->force_is_authorized = $arr['authorized'];
+    }
 
     /**
      * resolve_entries_from_asset - In-context entry(ies) from asset assocs.
