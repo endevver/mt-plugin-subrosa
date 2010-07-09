@@ -28,16 +28,13 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     }
 
     /**
-     * check_request - Alias to is_authorized()
+     * check_request - An simple alias for is_authorized()
      *
      * @access  public
      * @param   int     $entry_id
-     * @global  SubRosa $_GLOBALS['mt']
      * @return  bool
      **/
     public function check_request( $entry_id=null ) {
-        global $mt;
-        $mt->marker("In check_request with entry_id $entry_id, ".__FILE__);
         return $this->is_authorized( $entry_id );
     } // end func check_request
 
@@ -56,17 +53,31 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function is_authorized( $entry_id=null ) {
         global $mt;
+        $mt->marker("In is_authorized with entry_id $entry_id, ".__FILE__);
 
-        // Fetch details about the entry or entries in context
+        // Fetch details about the entry or entries in context, if any
         $this->entries =& $this->resolve_entry( $entry_id );
         $entries       =& $this->entries;
+
+        // Calculate access policies for $entries
         $e_access_type =  $this->access_type(); // See access_type() for info
+        $e_flag = array(
+            'no_vendors' => ( $e_access_type == 'Members Only (no vendors)' ),
+            'staff_only' => ( $e_access_type == 'CCSA Staff' )
+        );
+
+        /**
+         * This begins evaluation of the CCSA authorization business logic
+         */
         
+        // UNPROTECTED CONTENT
+        // Return true if request target is not protected
         if ( $this->is_protected( $entries ) === false ) {
             $mt->marker('AUTHORIZED: Request is for a public resource');
             return true;
         }
 
+        // USER AUTHENTICATION
         // Resolve the current user to test for authorization
         // The user must be authenticated to view protected content
         $user =& $this->resolve_user();
@@ -74,11 +85,12 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             $mt->marker(  'NOT AUTHORIZED: User must be authenticated');
             return $this->not_authorized();
         }
-        $mt->marker( 'Current user data: '.print_r($user) );
 
         // Retrieve the assoc array of CCSA-specific data
         $u_ccsa = $user->get('ccsa'); 
+        $mt->marker( 'Current user data: '.print_r($user) );
         
+        // ACTIVE USER STATUS
         // Protected documents require an active status
         if ( $u_ccsa['is_active'] == false ) {
             $mt->marker('NOT AUTHORIZED: User not active: '
@@ -86,44 +98,34 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             return $this->not_authorized();
         }
 
+        // STAFF USERS
         // Return true if the user is Staff since they can see anything
         if ( $u_ccsa['is_staff'] == true ) {
             $mt->marker('AUTHORIZED: User is staff');
             return true;
         }
 
+        // STAFF-ONLY DOCUMENTS
         // Since the user is not CCSA staff, deny access 
         // if the document is designated as staff only
-        if ( $e_access_type == 'CCSA Staff' ) {
+        if ( $e_flag['staff_only'] == true ) {
             $mt->marker('NOT AUTHORIZED: Document is staff only');
             return $this->not_authorized();
         }
-        $mt->marker('Document is not restricted to staff');
 
+        // VENDOR-RESTRICTED DOCUMENTS
         // Deny access "Vendor" members access if the document's
         // access type is set to 'Members Only (no vendors)' 
-        if ( $e_access_type == 'Members Only (no vendors)' && $u_is_vendor ) {
-            $mt->marker('NOT AUTHORIZED: User is a vendor and access set to '
-                        .$e_access_type );
+        if ( $u_ccsa['is_vendor'] && $e_flag['no_vendors'] ) {
+            $mt->marker('NOT AUTHORIZED: Document restricted to non-vendors');
             return $this->not_authorized();
         }
-        $mt->marker('User is not a Vendor member');
 
-
-        /*
-         *  CONTENT PROGRAM RESTRICTIONS CHECK
-         */
-        $all_programs = array();
-        foreach ($entries as $entry) {
-            // ###  $e_meta =  $mt->db->get_meta( 'entry', $entry_id );
-            $e_program      = $entry['entry_field.ccsa_access_program'];
-            foreach (explode(',', $e_program) as $p) {
-                $all_programs[$p] = 1;
-            }
-        }
+        // CONTENT PROGRAMS
+        $all_programs = $this->entry_content_programs( $entries )
 
         // Return true unless the document has content program restrictions
-        if ( count(array_keys( $all_programs )) == 0 ) {
+        if ( count( $all_programs) == 0 ) {
             $mt->marker(  'Document is not restricted to content group. '
                         . 'User is authorized.');
             return true;
@@ -132,7 +134,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
                     . implode(', ', $all_programs) );
 
         // Only members in Content programs can see program-specific docs
-        foreach ( array_keys( $all_programs ) as $program ) {
+        foreach ( $all_programs as $program ) {
             if ($program == 'Charter Launch') $program = 'chl';
             $user_field = 'private_ccsa_member_'.strtolower($program);
             if (isset( $user[$user_field] )) {
@@ -212,7 +214,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function access_type( $entry_id=null )  {
         global $mt;
 
-        if ( isset( $this->request_access_type )) {
+        if ( is_null( $entry_id ) && isset( $this->request_access_type )) {
             return $this->request_access_type;
         }
 
@@ -234,14 +236,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             $entries = $this->entries;
         }
 
-        if ( ! is_array( $entries ) || count( $entries ) == 0) {
-            $mt->marker(
-                'No entries in SubRosa context. Request is unprotected' );
-            return;
-        }
-        // $mt->marker( 'Entries: '.print_r($entries, true));
-
-        // Iterate over and evaluate policies of $entries
+        // Iterate over and evaluate policies of $entries, if any.
         // Compare policy to $strictest, and set the latter
         // if found policy is stricter
         foreach ( $entries as $entry ) {
@@ -254,8 +249,19 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Switch a "Public" access policy value to null, i.e. no restriction
         if ( $strictest == 'Public' ) $strictest == null;
 
-        $this->request_access_type = $strictest;
-        return $this->request_access_type;        
+        // For inquiries not specific to a single $entry_id, cache the
+        // $strictest to be used as a request-level access type
+        if ( ! $entry_id ) $this->request_access_type = $strictest;
+
+        // If we end up with a null value, return a NULL value
+        if ( is_null( $strictest )) return;
+
+        // Otherwise, return a array with extra information for access tests
+        return array(
+            'label'      => $strictest,
+            'no_vendors' => ( $strictest == 'Members Only (no vendors)' ),
+            'staff_only' => ( $strictest == 'CCSA Staff' )
+        )
     } // end func access_type
 
 
@@ -309,6 +315,39 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function error_page() { $this->login_page(); }
 
+    /**
+     * resolve_entry - Identify and load in-context entries
+     *
+     * @access  public
+     * @param   int     $entry_id
+     * @global  SubRosa $_GLOBALS['mt'] 
+     * @return  array   Array of entry object hashes
+     **/
+    public function entry_content_programs() {
+        if ( $fnargs = func_get_args() ) {
+
+            if (   is_object($fnargs[0]) 
+                || SubRosa_Util::is_assoc_array( $fnargs[0])) {
+                $entries = array( $fnargs[0] ); // Single entry
+            }
+            elseif ( is_array($fnargs[0]) ) {
+                $entries = $fnargs[0];          // Array of entries
+            }
+        }
+        else {
+            return;   // No entry or entries array provided
+        }
+
+        // Extract the content programs from the entries
+        $all_programs = array();
+        foreach ($entries as $entry) {
+            $e_program      = $entry['entry_field.ccsa_access_program'];
+            foreach (explode(',', $e_program) as $p) {
+                $all_programs[$p] = 1;
+            }
+        }
+        return array_keys($all_programs);
+    }
 
     /**
      * resolve_entry - Identify and load in-context entries
@@ -501,7 +540,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // returns the strictest access policy found amongst them.          
         // If the return value is NULL, it means that none of the entries are
         // protected so we return false
-        if ( is_null( $this->access_type() )) {
+        $access_policy = $this->access_type();
+        if ( ! $access_policy ) {
             $mt->marker('No entry in context has a protected access type.');
             return false;
         }
