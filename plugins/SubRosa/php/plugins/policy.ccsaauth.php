@@ -125,38 +125,6 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             $mt->marker('NOT AUTHORIZED: Not content group member');
             return $this->not_authorized();
         }
-
-        public function has_cprogram_access( $user, $entries ) {
-            
-            // CONTENT PROGRAMS
-            $cprograms        = $this->cprograms_for_entry( $entries );
-            $has_content_program = count( $cprograms );
-
-            // Only Content programs members can see cprogram-specific docs
-            if ( $has_content_program ) {
-                $mt->marker( 'Content is specific to content program(s): '
-                    . implode(', ', $cprograms) );
-
-                // Iterate through each content program found to test whether
-                // the user is a member of the group.  As long as one content
-                // program matches, the user is authorized
-                foreach ( $cprograms as $program ) {
-                    // Charter Launch is non-standard value in that it doesn't
-                    // mesh with its user field. So we modify it.
-                    if ($program == 'Charter Launch') $program = 'chl';
-                    $user_field = 'private_ccsa_member_'.strtolower($program);
-                    if (isset( $user[$user_field] )) {
-                        $mt->marker("User is authorized by content group: $program");
-                        return true;
-                    }
-                }
-                $mt->marker(  'Document is not restricted to content group. '
-                            . 'User is authorized.');
-                return true;
-            }
-
-        }
-
     } // end func is_authorized
 
 
@@ -326,6 +294,59 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      **/
     public function error_page() { $this->login_page(); }
+
+    /**
+     * has_cprogram_access - Checks for/enforces content program restrictions 
+     *
+     * Given a $user and either an $entry or array of $entries, this method
+     * ensures that either:
+     *      - The entries have no content program restrictions, OR
+     *      - The user is a member of at least one of the entire set of
+     *        content programs associated with any one of the given entries
+     *
+     * @access  public
+     * @param   SubRosa_MT_Object_Author        $user
+     * @param   SubRosa_MT_Object_Entry|array   $entries
+     * @global  SubRosa $_GLOBALS['mt'] 
+     * @return  bool
+     **/
+    public function has_cprogram_access( $user, $entries ) {
+        global $mt;
+
+        // Gather a list of all content programs for the given entries
+        $cprograms           = $this->cprograms_for_entry( $entries );
+        $no_content_programs = ( count( $cprograms ) == 0 );
+
+        // If the entries are not part of any cprograms, return true!
+        if ( $no_content_programs ) {
+            $mt->marker(  'Document has no content program restrictions');
+            return true;
+        }
+
+        $mt->marker( 'Content is specific to content program(s): '
+            . implode(', ', $cprograms) );
+
+        // Iterate through each content program found to test whether
+        // the user is a member of the group.  As long as one content
+        // program matches, the user is authorized
+        foreach ( $cprograms as $program ) {
+            // Charter Launch is non-standard value in that it doesn't
+            // mesh with its user field. So we modify it.
+            if ($program == 'Charter Launch') $program = 'chl';
+
+            // Derive the user field from the $program name and check
+            // if it's set in the user's metadata. If so, return true!
+            $user_field = 'private_ccsa_member_'.strtolower($program);
+            if (isset( $user[$user_field] )) {
+                $mt->marker( 'Found content program match: '
+                            . $program);
+                return true;
+            }
+        }
+
+        // User was not part of any of the discovered content porgrams
+        return false;
+    }
 
     /**
      * resolve_entry - Identify and load in-context entries

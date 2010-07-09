@@ -67,8 +67,8 @@ class SubRosa_MT_Object
     }
 
     function to_hash() {
-        foreach (get_object_vars($this) as $key => $val) {
-            if ($key != 'mt') { $hash[$key] = $val; }            
+        foreach ( get_object_vars($this) as $key => $val ) {
+            if ($key != 'mt') $hash[$key] = $val;
         } 
         return $hash;
     }
