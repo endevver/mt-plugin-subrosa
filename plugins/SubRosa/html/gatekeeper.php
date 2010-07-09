@@ -25,13 +25,42 @@
 // Handle mt-preview URLs by not handling them
 // /2010/06/mt-preview-d1c087f22262e5264c6b57e21ae1c84edeccd02d.html?083153
 
-if ( preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/', 
-                $_SERVER['REQUEST_URI']) ) {
-    $_GLOBAL['SUBROSA_PASSTHRU'] = 1;
+$subrosa_config = array();
+
+if ( ! url_is_entry_preview() && ! $_GLOBAL['SUBROSA_PASSTHRU'] ) {
+    handle_request();
 }
 
-if ( ! $_GLOBAL['SUBROSA_PASSTHRU'] ) {
 
+/**
+ * FUNC - SHORT DESC
+ *
+ * LONG DESC
+ *
+ * @access  public
+ * @param   SubRosa_MT_Object_Author        $user
+ * @param   SubRosa_MT_Object_Entry|array   $entries
+ * @global  SubRosa $_GLOBALS['mt'] 
+ * @return  bool
+ **/
+function url_is_entry_preview( $url) {
+    $preview_regex    = '/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/';
+    return preg_match( $preview_regex, $_SERVER['REQUEST_URI']);
+}
+
+/**
+ * FUNC - SHORT DESC
+ *
+ * LONG DESC
+ *
+ * @access  public
+ * @param   SubRosa_MT_Object_Author        $user
+ * @param   SubRosa_MT_Object_Entry|array   $entries
+ * @global  SubRosa $_GLOBALS['mt'] 
+ * @return  bool
+ **/
+function handle_request() {
+    global $subrosa_config, $cfg, $mt;
     // Initialize SubRosa and handle request
     $subrosa_config = init_subrosa_config();
 
@@ -40,11 +69,7 @@ if ( ! $_GLOBAL['SUBROSA_PASSTHRU'] ) {
 
     $cfg            =& $subrosa_config;
     require_once( $cfg['subrosa_path'] );
-    handle_request();
-}
 
-function handle_request() {
-    global $subrosa_config, $cfg, $mt;
     apache_setenv('SUBROSA_EVALUATED', 1);
     apache_note('SUBROSA_EVALUATED',  '1');
     $_SERVER['SUBROSA_EVALUATED']    = 1;
@@ -55,6 +80,17 @@ function handle_request() {
     $mt->bootstrap();
 }
 
+/**
+ * FUNC - SHORT DESC
+ *
+ * LONG DESC
+ *
+ * @access  public
+ * @param   SubRosa_MT_Object_Author        $user
+ * @param   SubRosa_MT_Object_Entry|array   $entries
+ * @global  SubRosa $_GLOBALS['mt'] 
+ * @return  bool
+ **/
 function init_php_ini() {
 
   // Even when display_errors is on, errors that occur
@@ -81,6 +117,17 @@ function init_php_ini() {
 
 }
 
+/**
+ * FUNC - SHORT DESC
+ *
+ * LONG DESC
+ *
+ * @access  public
+ * @param   SubRosa_MT_Object_Author        $user
+ * @param   SubRosa_MT_Object_Entry|array   $entries
+ * @global  SubRosa $_GLOBALS['mt'] 
+ * @return  bool
+ **/
 function init_subrosa_config() {
 
     init_php_ini();
