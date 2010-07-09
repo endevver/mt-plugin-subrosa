@@ -121,30 +121,42 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             return $this->not_authorized();
         }
 
-        // CONTENT PROGRAMS
-        $all_programs = $this->entry_content_programs( $entries )
-
-        // Return true unless the document has content program restrictions
-        if ( count( $all_programs) == 0 ) {
-            $mt->marker(  'Document is not restricted to content group. '
-                        . 'User is authorized.');
-            return true;
+        if ( ! $this->has_cprogram_access( $user, $entries ) ) {
+            $mt->marker('NOT AUTHORIZED: Not content group member');
+            return $this->not_authorized();
         }
-        $mt->marker( 'Content is specific to content program(s): '
-                    . implode(', ', $all_programs) );
 
-        // Only members in Content programs can see program-specific docs
-        foreach ( $all_programs as $program ) {
-            if ($program == 'Charter Launch') $program = 'chl';
-            $user_field = 'private_ccsa_member_'.strtolower($program);
-            if (isset( $user[$user_field] )) {
-                $mt->marker("User is authorized by content group: $program");
+        public function has_cprogram_access( $user, $entries ) {
+            
+            // CONTENT PROGRAMS
+            $cprograms        = $this->cprograms_for_entry( $entries );
+            $has_content_program = count( $cprograms );
+
+            // Only Content programs members can see cprogram-specific docs
+            if ( $has_content_program ) {
+                $mt->marker( 'Content is specific to content program(s): '
+                    . implode(', ', $cprograms) );
+
+                // Iterate through each content program found to test whether
+                // the user is a member of the group.  As long as one content
+                // program matches, the user is authorized
+                foreach ( $cprograms as $program ) {
+                    // Charter Launch is non-standard value in that it doesn't
+                    // mesh with its user field. So we modify it.
+                    if ($program == 'Charter Launch') $program = 'chl';
+                    $user_field = 'private_ccsa_member_'.strtolower($program);
+                    if (isset( $user[$user_field] )) {
+                        $mt->marker("User is authorized by content group: $program");
+                        return true;
+                    }
+                }
+                $mt->marker(  'Document is not restricted to content group. '
+                            . 'User is authorized.');
                 return true;
             }
+
         }
 
-        $mt->marker('NOT AUTHORIZED: Not content group member');
-        return $this->not_authorized();
     } // end func is_authorized
 
 
@@ -323,7 +335,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @global  SubRosa $_GLOBALS['mt'] 
      * @return  array   Array of entry object hashes
      **/
-    public function entry_content_programs() {
+    public function cprograms_for_entry() {
+        // FIXME Clean up cprograms_for_entry argument handling and ret val
         if ( $fnargs = func_get_args() ) {
 
             if (   is_object($fnargs[0]) 
@@ -529,6 +542,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function is_protected( $entries=array() ) {
         global $mt;
         
+        if ( ! $entries ) $entries
         // Since only entries are protected, return true if none in context
         if ( count($entries) == 0 ) {
             $mt->marker('No entry in context, document is not protected');
