@@ -24,8 +24,13 @@
 
 // Handle mt-preview URLs by not handling them
 // /2010/06/mt-preview-d1c087f22262e5264c6b57e21ae1c84edeccd02d.html?083153
-if (! preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/',
-                 $_SERVER['REQUEST_URI'])) {
+
+if ( preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/', 
+                $_SERVER['REQUEST_URI']) ) {
+    $_GLOBAL['SUBROSA_PASSTHRU'] = 1;
+}
+
+if ( ! $_GLOBAL['SUBROSA_PASSTHRU'] ) {
 
     // Initialize SubRosa and handle request
     $subrosa_config = init_subrosa_config();

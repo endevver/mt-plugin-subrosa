@@ -220,6 +220,9 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Compare policy to $strictest, and set the latter
         // if found policy is stricter
         foreach ( $entries as $entry ) {
+            // TODO Check to make sure that the entry is provisioned with its
+            // metadata and that the key looks like
+            // entry_field.ccsa_access_type
             $access = $entry['entry_field.ccsa_access_type'];            
             if ( $levels[$access] > $levels[$strictest] ) 
                 $strictest = $access;
@@ -241,7 +244,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             'label'      => $strictest,
             'no_vendors' => ( $strictest == 'Members Only (no vendors)' ),
             'staff_only' => ( $strictest == 'CCSA Staff' )
-        )
+        );
     } // end func access_type
 
 
@@ -273,6 +276,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function login_page() {
         $url_data =& $this->url_data;
+        // FIXME We're not populating $this->entry anymore
         if ( isset($this->entry) &&  isset($url_data['fileinfo'])) {
             header( 'Location: '
                    .$url_data['fileinfo']['fileinfo_url']);
@@ -349,37 +353,46 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     }
 
     /**
-     * resolve_entry - Identify and load in-context entries
+     * cprograms_for_entry - Identify and load in-context entries
      *
      * @access  public
-     * @param   int     $entry_id
-     * @global  SubRosa $_GLOBALS['mt'] 
-     * @return  array   Array of entry object hashes
+     * @param   mixed   $entries
+     * @return  array   Array of content program names from all $entries
      **/
-    public function cprograms_for_entry() {
-        // FIXME Clean up cprograms_for_entry argument handling and ret val
-        if ( $fnargs = func_get_args() ) {
-
-            if (   is_object($fnargs[0]) 
-                || SubRosa_Util::is_assoc_array( $fnargs[0])) {
-                $entries = array( $fnargs[0] ); // Single entry
-            }
-            elseif ( is_array($fnargs[0]) ) {
-                $entries = $fnargs[0];          // Array of entries
-            }
-        }
-        else {
-            return;   // No entry or entries array provided
+    public function cprograms_for_entry( $entries ) {
+        // The $entries parameter can be any of the following:
+        //
+        //     * An object of class SubRosa_MT_Object_Entry
+        //     * An associative array representing an entry's data as returned
+        //       by $mt->db->fetch_entry 
+        //     * A simple array of either of the above
+        //
+        // We need to convert $entries into an array of associative arrays
+        // for easy/consistent comparison but is_array() evaluates as true for 
+        // both of the last two, so, instead, we test for either of the two
+        // single-object cases.  If found, we convert the parameter into a
+        // single-element array by the same name
+        if (   is_object( $entries )
+            || SubRosa_Util::is_assoc_array( $entries )) {
+            $entries = array( $entries );
         }
 
         // Extract the content programs from the entries
         $all_programs = array();
         foreach ($entries as $entry) {
-            $e_program      = $entry['entry_field.ccsa_access_program'];
+            // If $entry is an object, convert it to a hash (errr assoc array)
+            if ( is_object($entry) ) $entry = $entry->to_hash();
+
+            // Retrieve the list of content programs assigned to the entry
+            // and create a lookup hash with the content program names as keys
+            $e_program = $entry['entry_field.ccsa_access_program'];
             foreach (explode(',', $e_program) as $p) {
                 $all_programs[$p] = 1;
             }
         }
+
+        // Return a the array keys yielding a simple array of strings, one
+        // for each content program assigned to any of the given entries.
         return array_keys($all_programs);
     }
 
@@ -563,9 +576,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function is_protected( $entries=array() ) {
         global $mt;
         
-        if ( ! $entries ) $entries
         // Since only entries are protected, return true if none in context
-        if ( count($entries) == 0 ) {
+        if ( ! $entries ) {
             $mt->marker('No entry in context, document is not protected');
             return false;
         }
