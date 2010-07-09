@@ -97,6 +97,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Some handy shortcut variables
         $u_status      = $user->get('field.private_ccsa_member_status');
         $u_type        = $user->get('field.private_ccsa_member_type');
+        $u_is_vendor   = ( $u_type == 'V' );
         $u_is_staff    = (    $user->get('field.private_ccsa_company_id')
                             == $mt->config('imisadminaccountid')       );
         $u_is_inactive = ($u_status != 'A') && ($u_status != 'CM');
@@ -126,6 +127,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             return $this->not_authorized();
         }
         $mt->marker('Document is not restricted to staff');
+
+        // Deny access "Vendor" members access if the document's
+        // access type is set to 'Members Only (no vendors)' 
+        if ( $e_access_type == 'Members Only (no vendors)' && $u_is_vendor ) {
+            $mt->marker('NOT AUTHORIZED: User is a vendor and access set to '
+                        .$e_access_type );
+            return $this->not_authorized();
+        }
+        $mt->marker('User is not a Vendor member');
+
 
         /*
          *  CONTENT PROGRAM RESTRICTIONS CHECK
