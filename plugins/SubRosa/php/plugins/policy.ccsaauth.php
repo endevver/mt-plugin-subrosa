@@ -60,48 +60,27 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $this->entries =& $this->resolve_entry( $entry_id );
         $entries       =& $this->entries;
 
-        // $this->access_type() inspects $this->entries and returns
-        // the strictest access policy found amongst them.  
-        $e_access_type  =  $this->access_type(); 
-
-        // Since only entries are protected, return true if none in context
-        if ( count($entries) == 0 ) {
-            $mt->marker('AUTHORIZED: No entry in context, access is Public');
+        if ( $this->is_protected( $entries ) === false ) {
+            $mt->marker('AUTHORIZED: Request is for a public resource');
             return true;
         }
 
-        // We return true if null because it indicates all entries are PUBLIC
-        if ( is_null($e_access_type) ) {
-            $mt->marker('AUTHORIZED: Entry is not protected');
-            return true;
-        }
+        
+        // Resolve the current user to test for authorization
+        $user =& $this->resolve_user();
 
-        ////////////////////////////////////////////////////////////////////
-        //                          IMPORTANT                             //
-        // From here on, the requested document is known to be PROTECTED  //
-        ////////////////////////////////////////////////////////////////////
-
-        // Resolve the current user.
-        $user =& $mt->auth->user();
-
-        // An unset $user indicates lack of authentication
+        // An unset $user means they are not currently authenticated
         // User must be authenticated to view a protected
-        // document so access must be denied
+        // document so we must deny access.
         if ( ! isset($user) ) {
-            $mt->marker(  'NOT AUTHORIZED: Document protected and '
-                        . 'user is not authenticated');
+            $mt->marker(  'NOT AUTHORIZED: User must be authenticated');
             return $this->not_authorized();
         }
         $mt->marker('User is authenticated: '. $user->get('name'));
 
-        // Some handy shortcut variables
-        $u_status      = $user->get('field.private_ccsa_member_status');
-        $u_type        = $user->get('field.private_ccsa_member_type');
-        $u_is_vendor   = ( $u_type == 'V' );
-        $u_is_staff    = (    $user->get('field.private_ccsa_company_id')
-                            == $mt->config('imisadminaccountid')       );
-        $u_is_inactive = ($u_status != 'A') && ($u_status != 'CM');
-                   // Active statuses are:  A (Active) and CM (Complimentary)
+
+
+
 
         // Protected documents require an active status
         if ( $u_is_inactive ) {
@@ -173,6 +152,54 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         return $this->not_authorized();
     } // end func is_authorized
 
+
+    /**
+     * resolve_user - Returns the user object for the current user with
+     *                both native MT fields and CCSA-specific metadata
+     *
+     * LONG DESCRIPTION
+     *
+     * @access  public
+     * @global  SubRosa $_GLOBALS['mt']
+     * @return  object|null
+     **/
+    public function resolve_user() {
+        global $mt;
+
+        // The designated company/institution code for CCSA
+        $staff_id  = $mt->config('imisadminaccountid');
+
+        // Active statuses are:  A (Active) and CM (Complimentary)
+        $active_statuses = array( 'A', 'CM' );
+
+        // Load the user from auth cookie information
+        $user =& $mt->auth->user();
+        if ( ! isset( $user )) return;
+
+        // The user's associated company/institution code
+        $u_ccsa_id = $user->get('field.private_ccsa_company_id');
+
+        // The user's member type, e.g. 'V' is for vendor
+        $u_type    = $user->get('field.private_ccsa_member_type');
+
+        // The user's CCSA membership status
+        $u_status  = $user->get('field.private_ccsa_member_status');
+
+        // Store the CCSA-specific data in user's properties as an
+        // assoc. array namespaced by the key "ccsa" to prevent
+        // conflicts with native user fields
+        $user->set(
+            'ccsa', 
+            array(
+                'type'      => $u_type,
+                'is_vendor' => ( $u_type == 'V' ),
+                'status'    => $u_status,
+                'is_staff'  => ( $u_ccsa_id == $staff_id ),
+                'is_active' => in_array( $u_status, $active_statuses ),
+            )
+        );
+        return $user;
+    }
 
     /**
      * access_type - Returns the access type for one or more entries
@@ -462,17 +489,27 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      * @return  bool    True if not Public access type
      **/
-    public function is_protected( $entry_id=null ) {
-        // $this->access_type() inspects $this->entries and returns
-        // the strictest access policy found amongst them.  
-        $e_access_type  =  $this->access_type(); 
-
-        // We return true if null because it indicates all entries are PUBLIC
-        if ( is_null($e_access_type) ) {
-            $mt->marker('AUTHORIZED: Entry is not protected');
-            return true;
+    public function is_protected( $entries=array() ) {
+        global $mt;
+        
+        // Since only entries are protected, return true if none in context
+        if ( count($entries) == 0 ) {
+            $mt->marker('No entry in context, document is not protected');
+            return false;
         }
-        return false;
+
+        // Now, check to see whether the current request has a non-public
+        // access_type. $this->access_type() inspects $this->entries and
+        // returns the strictest access policy found amongst them.          
+        // If the return value is NULL, it means that none of the entries are
+        // protected so we return false
+        if ( is_null( $this->access_type() )) {
+            $mt->marker('No entry in context has a protected access type.');
+            return false;
+        }
+
+        // Otherwise, the request is for a protected asset
+        return true;
     }
 }
 
