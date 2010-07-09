@@ -4,7 +4,7 @@
 */
 class SubRosa_Util
 {
-    function document_root() {
+    public static function document_root() {
         if ( ! isset($_SERVER['DOCUMENT_ROOT'] )) {
             $abs_filepath = $_SERVER['SCRIPT_FILENAME'];
             $relative_uri = $_SERVER['PHP_SELF'];
@@ -14,7 +14,7 @@ class SubRosa_Util
         return $_SERVER['DOCUMENT_ROOT'];
     }
 
-    function phpsession($key=null, $val=null) {
+    public static function phpsession($key=null, $val=null) {
         global $mt;
         $sess_key = $mt->user_session_key;
         if (isset($key) and isset($val)) {
@@ -36,7 +36,7 @@ class SubRosa_Util
         }
     }
 
-    function magic_token() {
+    public static function magic_token() {
         $alpha = array_merge(range('a','z'), range('A','Z'), range(0,9));
         srand((float)microtime() * 1000000);
         $rand_keys = array_rand($alpha, 40);
@@ -48,14 +48,14 @@ class SubRosa_Util
         return $token;
     }
 
-    function os_path() {
+    public static function os_path() {
         $arrrrrgs = func_get_args();
         return str_replace(
             '//', '/', join( DIRECTORY_SEPARATOR, $arrrrrgs )
         );
     }
 
-    function is_assoc_array($array) {
+    public static function is_assoc_array($array) {
         if ( ! is_array($array) ) return false; // Not an array
         if ( count($array) == 0 ) return true;  // Empty is assoc
         // See entire discussion thread on
@@ -68,7 +68,7 @@ class SubRosa_Util
         );
     } 
 
-    function unpack_session_data($sdata) {
+    public static function unpack_session_data($sdata) {
         global $mt;
         //$mt->marker();
         $mtdb =& $mt->db;
@@ -81,7 +81,7 @@ class SubRosa_Util
         return $session_data;
     }
 
-    function hashval($key='', $array=array()) {
+    public static function hashval($key='', $array=array()) {
         if (isset($array) and array_key_exists($key, $array)) {
             return $array[$key];
         }

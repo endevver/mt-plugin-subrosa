@@ -29,6 +29,9 @@ if (! preg_match('/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/',
 
     // Initialize SubRosa and handle request
     $subrosa_config = init_subrosa_config();
+
+    require_once( 'SubRosa/DebuggingEnv.php' );
+    
     $cfg            =& $subrosa_config;
     require_once( $cfg['subrosa_path'] );
     handle_request();

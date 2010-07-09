@@ -299,7 +299,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         // Assume that current request is for an asset
         // Try to resolve the entry or entries from the asset association(s)
-        if ( ! isset($entry) && !isset($this->force_response()) ) {
+        $skip = (isset($entry) || $this->force_response());
+        if ( ! $skip ) {
             $entries =& $this->resolve_entries_from_asset();
             $this->is_asset_request = isset($entries);
         }
@@ -321,7 +322,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @global  SubRosa $_GLOBALS['mt']
      * @return  array|null  Array is an entry object hash
      **/
-    public function &resolve_entry_from_fileinfo() {
+    function &resolve_entry_from_fileinfo() {
         global $mt;
         $this->request = $mt->fix_request_path();
         $mt->marker('this request: '.$this->request);
@@ -365,7 +366,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
                     . print_r($url_data, true));
     } // end func resolve_entry_from_fileinfo
 
-    private function force_response( $arr=null ) {
+    function force_response( $arr=null ) {
         if ( is_null($arr) ) return $this->force_is_authorized;
         $this->force_is_authorized = $arr['authorized'];
     }
@@ -377,7 +378,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @global  SubRosa     $_GLOBALS['mt']
      * @return  array|null  Array of entry object hashes
      **/
-    public function &resolve_entries_from_asset() {
+    function &resolve_entries_from_asset() {
         global $mt;
 
         // Load all assets with the same filename, return if none
@@ -453,7 +454,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      * @return  bool    True if not Public access type
      **/
-    public function is_protected( $entry_id=null ) {
+    function is_protected( $entry_id=null ) {
         // $this->access_type() inspects $this->entries and returns
         // the strictest access policy found amongst them.  
         $e_access_type  =  $this->access_type(); 

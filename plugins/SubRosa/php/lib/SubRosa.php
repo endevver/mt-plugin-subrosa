@@ -83,13 +83,24 @@ class SubRosa extends MT
     {
         $this->error_level = E_ALL ^ E_NOTICE;
         global $subrosa_config;
-        $this->controller_blog_id = $subrosa_config['controller_blog_id'];
-        $this->log_output         = $subrosa_config['log_output'];
-        $this->exclude_blogs      = $subrosa_config['exclude_blogs'];
-        $this->site_path          = $subrosa_config['site_path'];
-        $this->notify_user        = $subrosa_config['notify_user'];
-        $this->notify_pass        = $subrosa_config['notify_pass'];
-        $this->mt_dir             = $subrosa_config['mt_dir'];
+        foreach ( array_keys($subrosa_config) as $key ) {
+            $this->$key = $subrosa_config[$key];
+        }
+        // controller_blog_id
+        // log_output        
+        // exclude_blogs     
+        // site_path         
+        // notify_user       
+        // notify_pass       
+        // mt_dir            
+
+        // $this->controller_blog_id = $subrosa_config['controller_blog_id'];
+        // $this->log_output         = $subrosa_config['log_output'];
+        // $this->exclude_blogs      = $subrosa_config['exclude_blogs'];
+        // $this->site_path          = $subrosa_config['site_path'];
+        // $this->notify_user        = $subrosa_config['notify_user'];
+        // $this->notify_pass        = $subrosa_config['notify_pass'];
+        // $this->mt_dir             = $subrosa_config['mt_dir'];
 
         $this->init_logger();
         $this->marker('Initializing SubRosa class for request to '
