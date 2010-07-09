@@ -20,6 +20,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         'Public'                    => 0,
     );
     var $force_is_authorized;
+    var $request_access_type;
 
     function __construct() {
         global $mt;
@@ -59,48 +60,40 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Fetch details about the entry or entries in context
         $this->entries =& $this->resolve_entry( $entry_id );
         $entries       =& $this->entries;
-
+        $e_access_type =  $this->access_type(); // See access_type() for info
+        
         if ( $this->is_protected( $entries ) === false ) {
             $mt->marker('AUTHORIZED: Request is for a public resource');
             return true;
         }
 
-        
         // Resolve the current user to test for authorization
+        // The user must be authenticated to view protected content
         $user =& $this->resolve_user();
-
-        // An unset $user means they are not currently authenticated
-        // User must be authenticated to view a protected
-        // document so we must deny access.
         if ( ! isset($user) ) {
             $mt->marker(  'NOT AUTHORIZED: User must be authenticated');
             return $this->not_authorized();
         }
-        $mt->marker('User is authenticated: '. $user->get('name'));
+        $mt->marker( 'Current user data: '.print_r($user) );
 
-
-
-
-
+        // Retrieve the assoc array of CCSA-specific data
+        $u_ccsa = $user->get('ccsa'); 
+        
         // Protected documents require an active status
-        if ( $u_is_inactive ) {
-            $mt->marker('NOT AUTHORIZED: User not active: '.$u_status);
+        if ( $u_ccsa['is_active'] == false ) {
+            $mt->marker('NOT AUTHORIZED: User not active: '
+                        .$u_ccsa['status']);
             return $this->not_authorized();
         }
-        $mt->marker('User has an active status: '.$u_status);
 
         // Return true if the user is Staff since they can see anything
-        if ( $u_is_staff ) {
+        if ( $u_ccsa['is_staff'] == true ) {
             $mt->marker('AUTHORIZED: User is staff');
             return true;
         }
-        $mt->marker('User is not staff');
 
-        // If the document is a staff only document, return not_authorized
-        // since we now know the user is NOT staff
-        // FIXME ccsa_access_type doesn't have a "CCSA Staff" value!
-        // plugins/CCSATheme/config.yaml shows the following:
-        //          'Public,Members Only,Members Only (no vendors)'
+        // Since the user is not CCSA staff, deny access 
+        // if the document is designated as staff only
         if ( $e_access_type == 'CCSA Staff' ) {
             $mt->marker('NOT AUTHORIZED: Document is staff only');
             return $this->not_authorized();
@@ -218,7 +211,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function access_type( $entry_id=null )  {
         global $mt;
-        $mt->marker('In access_type, '.__FILE__);
+
+        if ( isset( $this->request_access_type )) {
+            return $this->request_access_type;
+        }
 
         // Initialize $strictest to least strict policy: Public
         $strictest = 'Public';
@@ -253,11 +249,13 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             if ( $levels[$access] > $levels[$strictest] ) 
                 $strictest = $access;
         }
+        $mt->marker("Access type: $strictest");
 
-        $mt->marker("Access type: $e_access_type");
+        // Switch a "Public" access policy value to null, i.e. no restriction
+        if ( $strictest == 'Public' ) $strictest == null;
 
-        // A "Public" access policy returns null. Essentially no access ctrl
-        if ( $strictest != 'Public' ) return $strictest;
+        $this->request_access_type = $strictest;
+        return $this->request_access_type;        
     } // end func access_type
 
 
