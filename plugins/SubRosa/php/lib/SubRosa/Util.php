@@ -87,7 +87,7 @@ class SubRosa_Util
         }
     }
 
-    function is_authorized($url) {
+    public static function is_authorized($url) {
         // print "<p>Here in is_authorized</p>";
         list($cuser, $csid, $cpersist) = self::get_user_cookie();
         // print "<p style='text-align: left'><pre style='text-align: left'>";
@@ -119,7 +119,7 @@ class SubRosa_Util
         }
     }
 
-    function get_user_cookie( $cname='mt_user' ) {
+    public static function get_user_cookie( $cname='mt_user' ) {
         $usercookie = self::hashval($cname, $_COOKIE);
         if ($usercookie) {
             $parts = explode('::', $usercookie);
@@ -128,11 +128,11 @@ class SubRosa_Util
         return array(null, null, null);
     }
 
-    function get_cmtr_cookie( $cname='mt_commenter' ) {
+    public static function get_cmtr_cookie( $cname='mt_commenter' ) {
         return self::get_user_cookie('mt_commenter');
     }
 
-    function sysdebug() {
+    public static function sysdebug() {
         ob_start();
         $variableSets = array(
             "Post:" => $_POST, 
@@ -158,7 +158,7 @@ class SubRosa_Util
         return $out;
     }
 
-    function printElementHtml( $value, $key ) { 
+    public static function printElementHtml( $value, $key ) { 
         ob_start();
         echo $key . " => "; 
         print_r( $value ); 

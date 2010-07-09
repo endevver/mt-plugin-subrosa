@@ -196,6 +196,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Initialize $strictest to least strict policy: Public
         $strictest = 'Public';
         $levels    =& $this->access_level; // Shorter name
+        $mt->marker('Access levels: '.print_r( $levels, true ));
 
         // Populate array of $entries to evaluate
         // If $entry_id is provided, only check that entry
@@ -209,6 +210,13 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         else {
             $entries = $this->entries;
         }
+
+        if ( ! is_array( $entries ) || count( $entries ) == 0) {
+            $mt->marker(
+                'No entries in SubRosa context. Request is unprotected' );
+            return;
+        }
+        // $mt->marker( 'Entries: '.print_r($entries, true));
 
         // Iterate over and evaluate policies of $entries
         // Compare policy to $strictest, and set the latter
@@ -294,7 +302,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             $entry =& $mt->db->fetch_entry($entry_id);
 
         // Try to resolve entry via fileinfo lookup of REQUEST_URI
-        if ( !isset($entry) ) {
+        if ( !isset($entry) )
             $entry =& $this->resolve_entry_from_fileinfo();
 
         // Assume that current request is for an asset
@@ -322,7 +330,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @global  SubRosa $_GLOBALS['mt']
      * @return  array|null  Array is an entry object hash
      **/
-    function &resolve_entry_from_fileinfo() {
+    public function &resolve_entry_from_fileinfo() {
         global $mt;
         $this->request = $mt->fix_request_path();
         $mt->marker('this request: '.$this->request);
@@ -366,7 +374,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
                     . print_r($url_data, true));
     } // end func resolve_entry_from_fileinfo
 
-    function force_response( $arr=null ) {
+    private function force_response( $arr=null ) {
         if ( is_null($arr) ) return $this->force_is_authorized;
         $this->force_is_authorized = $arr['authorized'];
     }
@@ -378,7 +386,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @global  SubRosa     $_GLOBALS['mt']
      * @return  array|null  Array of entry object hashes
      **/
-    function &resolve_entries_from_asset() {
+    private function &resolve_entries_from_asset() {
         global $mt;
 
         // Load all assets with the same filename, return if none
@@ -454,7 +462,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      * @return  bool    True if not Public access type
      **/
-    function is_protected( $entry_id=null ) {
+    public function is_protected( $entry_id=null ) {
         // $this->access_type() inspects $this->entries and returns
         // the strictest access policy found amongst them.  
         $e_access_type  =  $this->access_type(); 
