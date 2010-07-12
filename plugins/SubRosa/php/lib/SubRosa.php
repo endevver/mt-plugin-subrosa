@@ -1,36 +1,11 @@
 <?php
 
-// === TextMate error handling ===
-// include_once '/Applications/TextMate.app/Contents/SharedSupport/Bundles/PHP.tmbundle/Support/textmate.php';
-
-// Even when display_errors is on, errors that occur
-// during PHP's startup sequence are not displayed.
-// It's strongly recommended to keep display_startup_errors
-// off, except for debugging.
-ini_set('display_startup_errors', true); // off
-
-// This determines whether errors should be printed to the screen as part of
-// the output or if they should be hidden from the user.
-//  Note: Although display_errors may be set at runtime (with ini_set()), it //
-//  won't have any affect if the script has fatal errors. This is because the
-//  desired runtime action does not get executed.
-ini_set('display_errors', isset($_GET['debug']) ? true : false);
-
-// Tells whether script error messages should be logged to
-// the server's error log or error_log. This option is thus
-// server-specific.
-ini_set('log_errors', true);           // on
-
 // Enabling this setting prevents attacks involved passing
 // session ids in URLs. Defaults to true in PHP 5.3.0
 ini_set('session.use_only_cookies', true); 
 
-// Where script errors should be logged:
-//   ini_set('error_log', '/PATH/TO/php-errors.log');  // Log to file
-//   ini_set('error_log', 'syslog');                   // Log to syslog
-//   UNSET                                             // Log to STDERR
-
-require_once( 'SubRosa/Util.php' );
+require_once( 'SubRosa/DebuggingEnv.php' );
+require_once( 'SubRosa/Util.php' );             // For os_path
 
 // Derive the paths to the SubRosa and MT PHP libs directory
 $base_libdir = dirname( __FILE__ );
@@ -55,7 +30,9 @@ ini_set('include_path', $include_path);
 
 // Include the main MT dynamic libraries if they are 
 // not already so that we can extend the MT class...
-require_once( SubRosa_Util::os_path( dirname( $mt_libdir ), 'mt.php' ));
+require_once( 
+    SubRosa_Util::os_path( dirname( $mt_libdir ), 'mt.php' )
+);
 
 // require_once('log4php/Logger.php');
 
