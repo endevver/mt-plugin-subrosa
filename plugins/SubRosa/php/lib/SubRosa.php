@@ -11,6 +11,12 @@ require_once( 'SubRosa/Logger.php' );
 require_once(
     SubRosa_Util::os_path( $subrosa_config['mt_dir'], 'php', 'mt.php' ) );
 
+// Handle mt-preview URLs by not handling them
+if ( SubRosa_Util::url_is_entry_preview() ) {
+    $_GLOBAL['SUBROSA_PASSTHRU'] = true;
+}
+
+
 /**
 * MT-SubRosa
 */
