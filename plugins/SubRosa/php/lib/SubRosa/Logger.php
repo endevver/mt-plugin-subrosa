@@ -80,7 +80,7 @@ class SubRosa_Logger
 
         // build & return the message
         $this->log("[[$class::$function, $line]]: $msg");
-    }        
+    }
     function fullmarker($msg) {
         $bt = debug_backtrace();
 
@@ -94,7 +94,7 @@ class SubRosa_Logger
 
         // build & return the message
         $this->log("$class::$function: $msg in $file at $line");
-    }        
+    }
 
 
     function console($msg) { $this->log($msg); }
@@ -106,7 +106,7 @@ class SubRosa_Logger
     //     else {
     //         $this->debug("Can't write to console log at $log!");
     //     }
-    // 
+    //
     //     if (is_array($msg) || is_object($msg)) {
     //         $msg = print_r($msg, true);
     //     }
@@ -120,7 +120,7 @@ class SubRosa_Logger
 */
 class SubRosa_Logger_Syslog extends SubRosa_Logger
 {
-    function __construct() { 
+    function __construct() {
     }
 
     function log_dump()
@@ -128,9 +128,9 @@ class SubRosa_Logger_Syslog extends SubRosa_Logger
         $separator = str_repeat("\n",5)
                    . str_repeat((str_repeat("=", 80)."\n"),10);
         array_unshift($this->log, $separator);
-        $stderr = fopen('php://stderr', 'w'); 
+        $stderr = fopen('php://stderr', 'w');
         if ($stderr) {
-            fwrite($stderr,implode("\n", $this->log)."\n"); 
+            fwrite($stderr,implode("\n", $this->log)."\n");
             fclose($stderr);
         }
     }
@@ -141,7 +141,7 @@ class SubRosa_Logger_Syslog extends SubRosa_Logger
 class SubRosa_Logger_Screen extends SubRosa_Logger
 {
 
-    function __construct($opts='') { 
+    function __construct($opts='') {
     }
 
     function log_dump($opts='') {
@@ -169,7 +169,7 @@ class SubRosa_Logger_File extends SubRosa_Logger
 
     var $handle = NULL;
     var $file;
-    
+
     function __construct($file) {
         // Log messages to file
         if (  file_exists($file) ) {
@@ -188,7 +188,7 @@ class SubRosa_Logger_File extends SubRosa_Logger
                                . str_repeat((str_repeat("=", 80)."\n"),10);
                     array_unshift($this->log, $separator);
                 }
-                fwrite($handle, implode("\n", $this->log)."\n"); 
+                fwrite($handle, implode("\n", $this->log)."\n");
                 fclose($handle);
                 return;
             }

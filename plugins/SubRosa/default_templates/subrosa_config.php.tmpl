@@ -6,7 +6,7 @@
  */
 $config['mt_dir']               = '/Users/jay/Sites/jay.local/html/ccsa/mt';
 
-/** 
+/**
  *  subrosa_path - Filesystem path to the main SubRosa class file
  *                 relative to your Melody/MT directory. You shouldn't
  *                 need to change this unless you install SubRosa in a
@@ -14,16 +14,16 @@ $config['mt_dir']               = '/Users/jay/Sites/jay.local/html/ccsa/mt';
  */
 $config['subrosa_path']         = 'plugins/SubRosa/php/lib/SubRosa.php';
 
-/** 
+/**
  *  site_path - Absolute filesystem path to your site. The default is almost
  *              always correct and you should not change this unless you know
  *              what you're doing.
- */ 
+ */
 $config['site_path']            = $_SERVER['DOCUMENT_ROOT'];
 
-/** 
+/**
  *  log_output - Absolute filesystem path to an optional logfile
- */ 
+ */
 $config['log_output']       = $config['site_path']
                             . DIRECTORY_SEPARATOR
                             . 'subrosa_debug.log';
@@ -31,7 +31,7 @@ $config['log_output']       = $config['site_path']
 
 /************************************************************************
  *  DO NOT EDIT BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU'RE DOING
- */ 
+ */
 require_once(
     $config['mt_dir'] . DIRECTORY_SEPARATOR . $config['subrosa_path']
 );

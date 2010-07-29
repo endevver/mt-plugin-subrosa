@@ -19,7 +19,7 @@
  * mt_dir - Absolute filesystem path to your Melody/MT directory (MT_HOME).
  *          This is the directory containing mt-config.cgi.
  */
-$cfg['mt_dir']          = '/Users/jay/Sites/jay.local/html/ccsa/mt';
+$cfg['mt_dir']          = '/Users/jay/Sites/ccsa.local/html/mt';
 
 /**
  *  subrosa_path - Filesystem path to the main SubRosa class file

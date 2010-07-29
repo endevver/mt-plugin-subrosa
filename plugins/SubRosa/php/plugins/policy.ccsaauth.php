@@ -9,13 +9,13 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
     var $access_level = array(
         // FIXME CCSA Staff value does not exist!
-        'CCSA Staff'                => 3, 
+        'CCSA Staff'                => 3,
         'Members Only (no vendors)' => 2,
         'Members Only'              => 1,
         'Public'                    => 0,
     );
     var $is_asset_request = 0;
-    var $entries = array();    
+    var $entries = array();
     var $request;
     var $url_data;
     var $entry;
@@ -69,7 +69,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         /**
          * This begins evaluation of the CCSA authorization business logic
          */
-        
+
         // UNPROTECTED CONTENT
         // Return true if request target is not protected
         if ( $this->is_protected( $entries ) === false ) {
@@ -87,9 +87,9 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
 
         // Retrieve the assoc array of CCSA-specific data
-        $u_ccsa = $user->get('ccsa'); 
+        $u_ccsa = $user->get('ccsa');
         $mt->marker( 'Current user data: '.print_r($user) );
-        
+
         // ACTIVE USER STATUS
         // Protected documents require an active status
         if ( $u_ccsa['is_active'] == false ) {
@@ -106,7 +106,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
 
         // STAFF-ONLY DOCUMENTS
-        // Since the user is not CCSA staff, deny access 
+        // Since the user is not CCSA staff, deny access
         // if the document is designated as staff only
         if ( $e_flag['staff_only'] == true ) {
             $mt->marker('NOT AUTHORIZED: Document is staff only');
@@ -115,7 +115,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
         // VENDOR-RESTRICTED DOCUMENTS
         // Deny access "Vendor" members access if the document's
-        // access type is set to 'Members Only (no vendors)' 
+        // access type is set to 'Members Only (no vendors)'
         if ( $u_ccsa['is_vendor'] && $e_flag['no_vendors'] ) {
             $mt->marker('NOT AUTHORIZED: Document restricted to non-vendors');
             return $this->not_authorized();
@@ -164,7 +164,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // assoc. array namespaced by the key "ccsa" to prevent
         // conflicts with native user fields
         $user->set(
-            'ccsa', 
+            'ccsa',
             array(
                 'type'      => $u_type,
                 'is_vendor' => ( $u_type == 'V' ),
@@ -180,10 +180,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * access_type - Returns the access type for one or more entries
      *
      * The access type of an entry is a custom field that defines the minimum
-     * member status necessary to view it or the document assets it contains. 
+     * member status necessary to view it or the document assets it contains.
      * When called with no arguments, the method inspects $this->entries, an
      * array containing zero to many entries in context for the current
-     * request.  If more than one entry exists, the most strict access type 
+     * request.  If more than one entry exists, the most strict access type
      * of the entries is returned.
      *
      * @access  public
@@ -223,8 +223,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
             // TODO Check to make sure that the entry is provisioned with its
             // metadata and that the key looks like
             // entry_field.ccsa_access_type
-            $access = $entry['entry_field.ccsa_access_type'];            
-            if ( $levels[$access] > $levels[$strictest] ) 
+            $access = $entry['entry_field.ccsa_access_type'];
+            if ( $levels[$access] > $levels[$strictest] )
                 $strictest = $access;
         }
         $mt->marker("Access type: $strictest");
@@ -300,7 +300,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
     public function error_page() { $this->login_page(); }
 
     /**
-     * has_cprogram_access - Checks for/enforces content program restrictions 
+     * has_cprogram_access - Checks for/enforces content program restrictions
      *
      * Given a $user and either an $entry or array of $entries, this method
      * ensures that either:
@@ -311,7 +311,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      * @param   SubRosa_MT_Object_Author        $user
      * @param   SubRosa_MT_Object_Entry|array   $entries
-     * @global  SubRosa $_GLOBALS['mt'] 
+     * @global  SubRosa $_GLOBALS['mt']
      * @return  bool
      **/
     public function has_cprogram_access( $user, $entries ) {
@@ -364,11 +364,11 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         //
         //     * An object of class SubRosa_MT_Object_Entry
         //     * An associative array representing an entry's data as returned
-        //       by $mt->db->fetch_entry 
+        //       by $mt->db->fetch_entry
         //     * A simple array of either of the above
         //
         // We need to convert $entries into an array of associative arrays
-        // for easy/consistent comparison but is_array() evaluates as true for 
+        // for easy/consistent comparison but is_array() evaluates as true for
         // both of the last two, so, instead, we test for either of the two
         // single-object cases.  If found, we convert the parameter into a
         // single-element array by the same name
@@ -401,7 +401,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      *
      * @access  public
      * @param   int     $entry_id
-     * @global  SubRosa $_GLOBALS['mt'] 
+     * @global  SubRosa $_GLOBALS['mt']
      * @return  array   Array of entry object hashes
      **/
     public function &resolve_entry( $entry_id=null ) {
@@ -449,7 +449,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
         $this->request = $mt->fix_request_path();
         $mt->marker('this request: '.$this->request);
 
-        // resolve_url() gives us an array of the blog, 
+        // resolve_url() gives us an array of the blog,
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
         if ( ! isset($url_data) ) return;
@@ -482,7 +482,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
         }
 
         // We should never get here.  If we do, we have a fileinfo record
-        // that does not correspond to an existing entry.  
+        // that does not correspond to an existing entry.
         // Raise hell...
         $mt->marker(  'Fileinfo returned but missing entry: '
                     . print_r($url_data, true));
@@ -516,7 +516,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
         // to the asset URL. Necessary to avoid matching twice, once
         // normally and once with %r in place of the blog URL.
         if ( is_object($assets) ) {
-            $asset = $assets; 
+            $asset = $assets;
         }
         else {
             // FIXME: We need to also look for the %r/%s/%a variant
@@ -539,7 +539,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
             }
         }
 
-        // Load all ObjectAsset records for $asset. 
+        // Load all ObjectAsset records for $asset.
         require_once('SubRosa/MT/Object/ObjectAsset.php');
         $oaterms = array(
             'object_ds' => 'entry',
@@ -578,7 +578,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
      **/
     public function is_protected( $entries=array() ) {
         global $mt;
-        
+
         // Since only entries are protected, return true if none in context
         if ( ! $entries ) {
             $mt->marker('No entry in context, document is not protected');
@@ -587,7 +587,7 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
 
         // Now, check to see whether the current request has a non-public
         // access_type. $this->access_type() inspects $this->entries and
-        // returns the strictest access policy found amongst them.          
+        // returns the strictest access policy found amongst them.
         // If the return value is NULL, it means that none of the entries are
         // protected so we return false
         $access_policy = $this->access_type();
