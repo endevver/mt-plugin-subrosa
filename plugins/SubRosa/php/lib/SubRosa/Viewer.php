@@ -34,7 +34,7 @@ class SubRosa_Viewer {
     // abstract public function handle_auth   ( $fileinfo          );
     // abstract public function handle_logout ( $fileinfo          );
     // abstract public function login_page    ( $params            );
-    // abstract public function error_handler ( $errno, $errstr,   
+    // abstract public function error_handler ( $errno, $errstr,
     //                                             $errfile, $errline );
 
 
@@ -74,7 +74,7 @@ class SubRosa_Viewer {
         $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);
 
         if (isset($_POST['login']) and isset($_REQUEST['redirect'])) {
-            $mt->redirect($_REQUEST['redirect']);        
+            $mt->redirect($_REQUEST['redirect']);
         }
 
         $mt->view();
@@ -175,7 +175,7 @@ class SubRosa_Viewer {
 
     function info() {
         print phpinfo();
-        exit;    
+        exit;
     }
 
     function fileinfo() {
@@ -199,7 +199,7 @@ class SubRosa_Viewer {
 
     function reqinfo() {
         print h1('SESSION');
-        print_table($_SESSION);    
+        print_table($_SESSION);
         print h1('COOKIES');
         print_table($_COOKIE);
         print h1('GET');
@@ -209,12 +209,12 @@ class SubRosa_Viewer {
         print h1('REQUEST');
         print_table($_REQUEST);
         print h1('SERVER');
-        print_table($_SERVER);    
+        print_table($_SERVER);
         exit;
     }
 
     // function trac_cookie_test() {
-    //     
+    //
     //     if ($_GET['traccookie']) {
     //         $key = 'trac_auth';
     //         $project = 'private';
@@ -224,8 +224,8 @@ class SubRosa_Viewer {
     //         $expire = 315360000;
     //         $path = '/private';
     //         $domain = '.extranet.tdi.local';
-    // 
-    //         setcookie($key, $val, (time()+$expire), $path, $domain); 
+    //
+    //         setcookie($key, $val, (time()+$expire), $path, $domain);
     //         print "<p>Just set cookie val $val</p>";
     //         print "<p>No MD5: $val_nomd5</p>";
     //         error_log("No MD5: $val_nomd5");
@@ -233,7 +233,7 @@ class SubRosa_Viewer {
     //         error_log("MD5: $val");
     //         exit;
     //     }
-    //     
+    //
     // }
     function print_table($array = null, $return_output = false) {
         if (empty($array)) return;
@@ -260,7 +260,7 @@ class SubRosa_Viewer {
     function h5() { $args=func_get_args(); return tag_wrap(__FUNCTION__, $args); }
     function h6() { $args=func_get_args(); return tag_wrap(__FUNCTION__, $args); }
 
-    function tag_wrap($tag, $arr = null) { 
+    function tag_wrap($tag, $arr = null) {
         $var = $arr[0];
         $args = $arr[1];
         $argstring = '';
@@ -269,12 +269,12 @@ class SubRosa_Viewer {
             $argstring .= " $key=\"$val\"";
             }
         }
-        return "<$tag$argstring>$var</$tag>"; 
+        return "<$tag$argstring>$var</$tag>";
     }
 
     function mimetype($ext) {
         global $mimetype_array;
-        if (empty($mimetype_array)) { 
+        if (empty($mimetype_array)) {
             $mimetype_array = init_mimetype();
         }
         return $mimetype_array[$ext];
@@ -448,7 +448,7 @@ class SubRosa_Viewer {
     }
     function show_current_request_info() {
         reqinfo();
-        exit;    
+        exit;
     }
 
 

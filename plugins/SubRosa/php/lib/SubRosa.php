@@ -2,7 +2,7 @@
 
 // Enabling this setting prevents attacks involved passing
 // session ids in URLs. Defaults to true in PHP 5.3.0
-ini_set('session.use_only_cookies', true); 
+ini_set('session.use_only_cookies', true);
 
 require_once( 'SubRosa/DebuggingEnv.php' );
 // require_once('log4php/Logger.php');
@@ -35,7 +35,7 @@ class SubRosa extends MT
     var $controller_blog_id;
     var $notify_user;
     var $notify_password;
-    
+
     function __construct( $cfg_file = null, $blog_id = null ) {
 
         // Assign values for object properties from config
@@ -43,7 +43,7 @@ class SubRosa extends MT
         foreach ( array_keys($subrosa_config) as $key ) {
             $this->$key = $subrosa_config[$key];
         }
-        
+
         // Initialize the logging system for debugging
         $this->init_logger();
 
@@ -65,7 +65,7 @@ class SubRosa extends MT
     function init_mt( $cfg_file = null, $blog_id = null ) {
         error_reporting( E_ALL ^ E_DEPRECATED );  // Squelch MT warnings
 
-        // Instantiate ourself from base class.  
+        // Instantiate ourself from base class.
         // The constructors calls OUR init() method
         $this->marker('Instantiating MT base class');
         parent::MT( $blog_id, $cfg_file, $this->error_level );
@@ -96,7 +96,7 @@ class SubRosa extends MT
     //  * Sets up multibyte string stuff
     //  WHEW!
     function init( $blog_id = null, $cfg_file = null ) { // Switched args!
-        
+
         date_default_timezone_set('America/Los_Angeles'); // Shut up PHP...
 
         $this->marker('Calling MT base init method');
@@ -112,7 +112,7 @@ class SubRosa extends MT
                 'Default login page'    => $this->page['login'],
                 'Default error page'    => $this->page['error']
             ),
-            true 
+            true
         ) );
     }
 
@@ -187,12 +187,12 @@ class SubRosa extends MT
 
     /* *********************************************************************
      *  VIEWER METHODS
-     *  The following methods are only used when a protected 
+     *  The following methods are only used when a protected
      *  page is dynamically rendered
      ********************************************************************** */
     function init_viewer() {
 
-        ob_start(); 
+        ob_start();
 
         $this->marker('Initializing viewer');
         $ctx =& $this->context();
@@ -251,7 +251,7 @@ class SubRosa extends MT
     // naming convention for usability.
     //
     //  * init - Loaded by both SubRosa and MT's dynamic publishing engine.
-    //           Used for defining MT initialization data (e.g. 
+    //           Used for defining MT initialization data (e.g.
     //           template tags, callbacks, etc) and executing anything that
     //           should be run early in the execution process (e.g. defining
     //           functions other code depends on, pre-modifying the
@@ -264,7 +264,7 @@ class SubRosa extends MT
     //             functionality of but do not fit one of the above.
     //
     function init_subrosa_plugins() {
-        $plugin_dir = SubRosa_Util::os_path( 
+        $plugin_dir = SubRosa_Util::os_path(
                           dirname($this->libdir), 'plugins'
                       );
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
@@ -285,7 +285,7 @@ class SubRosa extends MT
 
                     // If a policy is defined for this request, skip
                     // any other policies since they are unneeded.
-                    if (   isset( $request_policy ) 
+                    if (   isset( $request_policy )
                         && ( $type == 'Policy' )
                         && ( $base != $request_policy )) {
                         continue;
@@ -298,8 +298,8 @@ class SubRosa extends MT
             closedir($dh);
         }
 
-        // Check that any requested policy was properly loaded. 
-        // The PHP constant SUBROSA_POLICY should be defined in 
+        // Check that any requested policy was properly loaded.
+        // The PHP constant SUBROSA_POLICY should be defined in
         // the policy plugin file and contains the PHP class name.
         if ( defined( 'SUBROSA_POLICY' )) {
             $SUBROSA_POLICY = SUBROSA_POLICY; // new CONSTANT() doesn't work
@@ -344,7 +344,7 @@ class SubRosa extends MT
         $blog_id =  $this->blog_id;
         $blog    =  $this->blog();
 
-        $this->log(sprintf('Looking up request %s for blog ID %s ', 
+        $this->log(sprintf('Looking up request %s for blog ID %s ',
             $this->request, $this->blog_id));
         $data =& $this->resolve_url($this->request);
         $absolute_request = str_replace('//','/',($this->site_path.$this->request));
@@ -407,7 +407,7 @@ class SubRosa extends MT
          #       Set params
          #       ctx->fetch
          */
-        
+
          // Page not found
          if (!$data) {
 
@@ -434,7 +434,7 @@ class SubRosa extends MT
             if (isset($this->is_authorized)) {
                 $this->log('User is authorized...');
                 $output = $this->compile_blog_page($data);
-                if (is_null($output)) 
+                if (is_null($output))
                 $this->log('Came back with no output!');
             } else {
                 $this->log("Houston we have a problem: Unauthorized user.");
@@ -608,10 +608,10 @@ class SubRosa extends MT
     *  details submitted through the login form, creating
     *  sessions for valid users and redirecting the user
     *  to another page if needed.
-    */        
+    */
     function handle_login($fileinfo = null) {
         $this->marker();
-        
+
         // Look up the user in the database by username and password
         // and start a session if found.
         $auth =& $this->init_auth( $_POST['username'], $_POST['password'] );
@@ -636,7 +636,7 @@ class SubRosa extends MT
                 $this->log("App redirect set to $url");
                 $out = $this->redirect($url);
             }
-            // If the redirect parameter is set to one, send 
+            // If the redirect parameter is set to one, send
             // them back where they came from
             elseif ($_POST['redirect'] and $_POST['redirect'] == 1) {
                 $this->log("Post redirect set for referrer ".$_SERVER['HTTP_REFERER']);
@@ -648,7 +648,7 @@ class SubRosa extends MT
                 $out = $this->redirect($url);
             }
             // If neither of these, then we will just send them back
-            // to the page they were trying to access. A redirect is 
+            // to the page they were trying to access. A redirect is
             // necessary to get the cookie values to take hold.
             else {
                 $out = $this->redirect(SubRosa_Util::self_url());
@@ -662,7 +662,7 @@ class SubRosa extends MT
     function handle_auth($fileinfo = null) {
         $this->marker();
         $auth =& $this->init_auth();
-        
+
         // If no active, valid session is found,
         // we give them the login page.
         if ( ! $auth->session() ) {
@@ -670,7 +670,7 @@ class SubRosa extends MT
             $out = $this->login_page();
         }
         // If the user has permission to view the blog or
-        // we are in a blog context other than the 
+        // we are in a blog context other than the
         // controller blog, we return the authorized flag.
         elseif (($this->blog_id == $this->controller_blog_id)
                 or $auth->has_perms()) {
@@ -697,13 +697,13 @@ class SubRosa extends MT
     *  This method is responsible for destroying all login
     *  sessions and cookies and redirecting the user back
     *  to the root URL
-    */        
+    */
     function handle_logout($fileinfo = null) {
         $this->marker();
         $auth =& $this->init_auth();
-        
+
         if ($auth->session()) $auth->logout();
-        
+
         // After logout, we redirect back to the main site_url
         // and display the login screen. Unless there's an error
         if ($this->blog_id) {
@@ -795,7 +795,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         // $result .= $ctx->mt->translate_templatized($tmpl);
 
         print $ctx->fetch($tpl);
-        
+
     }
 
     function &context() {
@@ -926,9 +926,9 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             $out = ob_get_contents();
             ob_end_clean();
         }
-        
+
         if (is_null($out)) {
-            
+
             // Use the default error page
             $ctx->caching = 0;
             $ctx->stash('blog_id', $this->blog_id);
@@ -986,13 +986,13 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         $this->cookie_domain = $this->config['CookieDomain'];
 
         /*
-    
+
         if (! ($this->cookie_domain = $this->config['CookieDomain'])) {
             $urls[parse_url($this->site_url, PHP_URL_HOST)] = 1;
             $urls[parse_url($this->trac->url, PHP_URL_HOST)] = 1;
             $urls[parse_url($this->mt->url, PHP_URL_HOST)] = 1;
             if (count($urls) == 1) {
-                $this->cookie_domain = $urls[0];            
+                $this->cookie_domain = $urls[0];
             } else {
                 return $this->error(
                      'Please set the CookieDomain configuration variable '
@@ -1000,7 +1000,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
                     .'Trac and your website.  Please make sure to start '
                     .'it with a period (.).');
             }
-        }    
+        }
         */
     }
 
@@ -1011,7 +1011,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         // FIXME: Hardcoded is_bookmarklet parameter
         $ctx->stash('is_bookmarklet', 0);    // $app->param('is_bm')
         $ctx->stash('help_url', 'http://www.sixapart.com/movabletype/docs/enterprise/1.5/');
-        $ctx->stash('language_encoding', $this->config['PublishCharset']); 
+        $ctx->stash('language_encoding', $this->config['PublishCharset']);
 
         // FIXME: Hardcoded mt_url parameter
         // Perl is: $tmpl->param(mt_url => $app->mt_uri);
@@ -1022,7 +1022,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
             encode_html(PRODUCT_VERSION));
         $ctx->stash('script_base_url', '');
 
-        $ctx->stash('static_uri', 
+        $ctx->stash('static_uri',
             rtrim($this->config['StaticWebPath'], '/').'/');
 
         $lang = $this->config['DefaultLanguage'];
@@ -1035,7 +1035,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
         // $tmpl->param(mt_product_code => MT->product_code);
 
     }
-    
+
 
     function blog() {
         $ctx =& $this->context();
@@ -1113,7 +1113,7 @@ TODO:   Integrate with MT::Auth to determine the correct login form values
 }
 
 /**
- *    
+ *
 
 *
 * Error Handling and Logging Functions
@@ -1141,16 +1141,16 @@ UTIME=1182138925
 echo 'delete from session; select count(*) from session; delete from auth_cookie;select count(*) from auth_cookie;' | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db | xargs
 
 # The auth_cookie insert statement
-echo "INSERT INTO 'auth_cookie' VALUES ('$MAGIC','jay','127.0.0.1', $UTIME); "  | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db 
+echo "INSERT INTO 'auth_cookie' VALUES ('$MAGIC','jay','127.0.0.1', $UTIME); "  | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db
 
 # The session insert statement
-echo "INSERT INTO 'session' VALUES ('jay','1', $UTIME); "  | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db 
+echo "INSERT INTO 'session' VALUES ('jay','1', $UTIME); "  | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db
 
 # Join on both auth_cookie and session tables
 echo "select sid, cookie, authenticated, last_visit, time from session join auth_cookie on sid = name;" | sqlite3 ~/Sites/trac.local/data/personal/db/trac.db
 
 open -a Firefox "http://localhost/jay.php?c=$MAGIC"
- 
+
  */
 
  // textmate_backtrace();
