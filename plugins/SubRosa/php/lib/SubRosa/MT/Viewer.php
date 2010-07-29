@@ -9,6 +9,9 @@ include_once("Smarty.class.php");
 require_once('MTViewer.php');
 class SubRosa_MT_Viewer extends MTViewer {
 
+    // We override this function in MTViewer in oredr to properly handle
+    // conditional template tags defined by a ConfigAssistant-using plugin
+    // since ConfigAssistant doesn't even have a PHP side.
     function add_tag($tag, $fn) {
         global $mt;
         $mt->marker('In SubRosa_MT_Viewer::add_tag with '.$tag);

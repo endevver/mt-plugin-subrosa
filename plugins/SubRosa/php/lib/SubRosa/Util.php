@@ -55,6 +55,14 @@ class SubRosa_Util
         );
     }
 
+    public static function set_if_null( &$var=null, &$val=null ) {
+        if ( is_null( $var )) $var = $val;
+    }
+
+    public static function set_if_empty( &$var=null, &$val=null ) {
+        if ( empty( $var )) $var = $val;
+    }
+
     public static function is_assoc_array($array) {
         if ( ! is_array($array) ) return false; // Not an array
         if ( count($array) == 0 ) return true;  // Empty is assoc

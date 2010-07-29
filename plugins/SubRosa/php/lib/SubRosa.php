@@ -5,152 +5,242 @@
 ini_set('session.use_only_cookies', true); 
 
 require_once( 'SubRosa/DebuggingEnv.php' );
-require_once( 'SubRosa/Util.php' );             // For os_path
-
-// Derive the paths to the SubRosa and MT PHP libs directory
-$base_libdir = dirname( __FILE__ );
-  // In case config hasn't be read, derive the MT_DIR
-  // MT_DIR/plugins/SubRosa/php/lib/SubRosa.php
-$mt_dir = isset($cfg) ? $cfg['mt_dir']
-                      : dirname(dirname(dirname(dirname($base_libdir))));
-$mt_libdir   = SubRosa_Util::os_path( $mt_dir, 'php', 'lib' );
-
-// include_path: Prepend SubRosa and MT PHP lib and extlib directories
-$include_path = join( ':',
-    array(
-        $base_libdir,                                 // Our lib
-        str_replace( 'lib', 'extlib', $base_libdir ), 
-        $mt_libdir,                                   // MT lib
-        str_replace( 'lib', 'extlib', $mt_libdir ),
-        str_replace( 'lib', 'plugins', $mt_libdir ),
-        ini_get('include_path'),                      // Current value
-    ));
-// print "<p>include_path: $include_path</p>";
-ini_set('include_path', $include_path);
-
-// Include the main MT dynamic libraries if they are 
-// not already so that we can extend the MT class...
-require_once( 
-    SubRosa_Util::os_path( dirname( $mt_libdir ), 'mt.php' )
-);
-
 // require_once('log4php/Logger.php');
+require_once( 'SubRosa/Util.php' );
+require_once( 'SubRosa/Logger.php' );
+require_once(
+    SubRosa_Util::os_path( $subrosa_config['mt_dir'], 'php', 'mt.php' ) );
 
 /**
 * MT-SubRosa
 */
 class SubRosa extends MT
 {
+    define( 'VERSION', '3.0' );    // SubRosa version
 
-    //define('VERSION', 0.1); // Should be done in the class
-
+    // Declare properties and set defaults
     var $debugging           = false;
     var $logger              = NULL;
-    var $log_output;
     var $log_delay           = true;
     var $log_queries         = false;
-    var $controller_blog_id;
     var $plugins_initialized = false;
     var $user_cookie         = 'mt_user';
     var $user_session_key    = 'current_user';
+    var $error_level         = E_ALL ^ E_NOTICE;
+    var $libdir              = dirname( __FILE__ );
+    var $mt_dir;
+    var $log_output;
+    var $blog_id;
+    var $cfg_file;
+    var $controller_blog_id;
     var $notify_user;
     var $notify_password;
     
-    function __construct($cfg_file=null, $blog_id = null)
-    {
-        $this->error_level = E_ALL ^ E_NOTICE;
+    function __construct( $cfg_file = null, $blog_id = null ) {
+
+        // Assign values for object properties from config
         global $subrosa_config;
         foreach ( array_keys($subrosa_config) as $key ) {
             $this->$key = $subrosa_config[$key];
         }
-        // controller_blog_id
-        // log_output        
-        // exclude_blogs     
-        // site_path         
-        // notify_user       
-        // notify_pass       
-        // mt_dir            
-
-        // $this->controller_blog_id = $subrosa_config['controller_blog_id'];
-        // $this->log_output         = $subrosa_config['log_output'];
-        // $this->exclude_blogs      = $subrosa_config['exclude_blogs'];
-        // $this->site_path          = $subrosa_config['site_path'];
-        // $this->notify_user        = $subrosa_config['notify_user'];
-        // $this->notify_pass        = $subrosa_config['notify_pass'];
-        // $this->mt_dir             = $subrosa_config['mt_dir'];
-
+        
+        // Initialize the logging system for debugging
         $this->init_logger();
-        $this->marker('Initializing SubRosa class for request to '
-                      .$_SERVER['SCRIPT_URL']);
 
-        if ($this->debugging) {
-            $this->log('Debugging is on');
-            @setcookie('SMARTY_DEBUG', true);
-        }
-        $this->log('Calling MT base class');
-
-        $old_error_level = $this->error_level;
-        $this->error_level = E_ALL ^ E_DEPRECATED;
-
-        parent::MT( $blog_id,
-                    SubRosa_Util::os_path( $this->mt_dir, 'mt-config.cgi' ),
-            $this->error_level);
-
-        error_reporting( $old_error_level );
-
-        $this->error_level = $old_error_level;
-
-        // Initialize database and store in $ctx->mt->db
-        $db =& $this->db();
+        // Initialize the MT base class ( this also calls our init() method )
+        $this->init_mt( $cfg_file, $blog_id );
     }
 
-    function init($blog_id = null, $cfg_file = null) {
+    function init_logger() {
+        if ( isset($this->logger) ) return;
+        $this->logger = new SubRosa_Logger( $this->log_output );
+        if ( $this->debugging ) @setcookie('SMARTY_DEBUG', true);
+        $this->marker(
+            sprintf('Initializing SubRosa for %s (Debug: %s)',
+                      $_SERVER['SCRIPT_URL'],
+                      $this->debugging ? 'on' : 'off')
+        )
+    }
+
+    function init_mt( $cfg_file = null, $blog_id = null ) {
+        error_reporting( E_ALL ^ E_DEPRECATED );  // Squelch MT warnings
+
+        // Instantiate ourself from base class.  
+        // The constructors calls OUR init() method
+        $this->marker('Instantiating MT base class');
+        parent::MT( $blog_id, $cfg_file, $this->error_level );
+
+        $this->marker('MT base class instantiated');
+        error_reporting( $this->error_level );   // Restore error level
+    }
+
+    // Our init function is called directly from MT's constructor
+    // so we call MT's init() to complete the initialization.  During
+    // MT's init method execution, the following happens:
+    //
+    //  * $this->blog_id is set if supplied
+    //  * $this->config is set from the mt-config.cgi
+    //  * Extra config values set (all LOWERCASE!):
+    //      - phpdir        Directory containing mt.php (MT_HOME/php)
+    //      - mtdir         Path to MT directory (MT_HOME)
+    //      - phplibdir     Path to handlers    phpdir + lib
+    //      - dbdriver      Type of database driver
+    //  * Prepends the following to the include_path:
+    //      - phpdir/lib
+    //      - phpdir/extlib
+    //      - phpdir/extlib/smarty/libs
+    //  * Inits addons' plugins from (addons/AddonName/php)
+    //      - Bootstraps $this->ctx (viewer)
+    //  * Runs configure_from_db() which initializes DB into $this->db
+    //  * Sets up default language
+    //  * Sets up multibyte string stuff
+    //  WHEW!
+    function init( $blog_id = null, $cfg_file = null ) { // Switched args!
+        
+        date_default_timezone_set('America/Los_Angeles'); // Shut up PHP...
+
         $this->marker('Calling MT base init method');
+        parent::init( $blog_id, $cfg_file );
 
-        parent::init($blog_id, $cfg_file);
-        $this->log('Current blog ID: '.$this->blog_id);
+        // Set up custom SubRosa pages
+        $this->init_subrosa_templates()
 
-        date_default_timezone_set('America/Los_Angeles');
+        $this->log( print_r(
+            array(
+                'Current blog ID'       => $this->blog_id,
+                "Site root path"        => $this->site_path,
+                'Default login page'    => $this->page['login'],
+                'Default error page'    => $this->page['error']
+            ),
+            true 
+        ) );
+    }
 
-    global $base_libdir;
+    // Initialize SubRosa internal templates
+    function init_subrosa_pages() {
         $this->template_dir
-            = SubRosa_Util::os_path( dirname($base_libdir), '/tmpl' );
+            = SubRosa_Util::os_path( dirname( $this->libdir ), '/tmpl' );
         $this->template['debug'] = 'debug-jay.tpl';
         $this->template['login'] = 'login.tpl';
 
-        // Set up custom pages
-        // URGENT: Default site root is not the correct site root.
-        // TODO: Should set site root in controller blog configuration
-        if ( ! isset( $this->site_path )) {
-            $this->site_path = SubRosa_Util::document_root();
+        SubRosa_Util::set_if_empty(
+            $this->site_path, SubRosa_Util::document_root() );
+
+        foreach ( array('login','error') as $p) {
+            $this->page[$p]
+                = SubRosa_Util::os_path($this->site_path, $p.'.php');
         }
-        $site_root = $this->site_path;
-        
-        $this->log("Site root: $site_root");
-        
-        $this->page['login'] = SubRosa_Util::os_path($site_root, 'login.php');
-        $this->log('Default login page: '.$this->page['login']);
-        $this->page['error'] = SubRosa_Util::os_path($site_root, 'error.php');
-        $this->log('Default error page: '.$this->page['error']);
-        foreach ($this->page as $type => $file) {
-            if ( ! file_exists($file) ) {
+
+        foreach ( $this->page as $type => $file ) {
+            if ( file_exists($file) ) {
+                $this->log("Custom $type page found at ".$this->page[$type]);
+            } else {
                 $this->log("Custom $type page not found.");
                 unset($this->page[$type]);
-            } else {
-                $this->log("Custom $type page found at ".$this->page[$type]);
             }
         }
     }
 
-    function init_logger() {
-        if (isset($this->logger)) return;
-        require_once('SubRosa/Logger.php');
-        $this->logger = new SubRosa_Logger( $this->log_output );
+    /***
+     * Mainline handler function.
+     */
+    function bootstrap( $entry_id = null ) {
+        $this->marker('Bootstrapping SubRosa');
+
+        //kill_php_current_session();
+        // show_current_request_info();
+
+        session_name('SubRosa');
+        session_start();
+        $this->init_viewer();
+        $this->init_plugins();
+
+        // $this->log_dump(array('noscreen' => 1));
+        $this->log_dump();
+
+        $policy_class = SUBROSA_POLICY;
+        $policy       = new $policy_class();
+        $this->policy =& $policy;
+        $req_check    = $policy->check_request( $entry_id );
+
+        // Testing direct access by Jay
+        if ( $req_check === true ) {
+        // if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
+        //     && ($req_check === true)) {
+            $file      = $_SERVER['REQUEST_URI'];
+            $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
+            if (! preg_match('/\.(php|html)$/', $file_info->uri)) {
+                header('content-type: ' . $file_info->content_type);
+                $this->marker(print_r(array(
+                    'REQ_URI'      => $file,
+                    'file_info'    => $file_info,
+                    'content_type' => $file_info->content_type,
+                ), true));
+                $this->log_dump();
+                // $this->log_dump(array('noscreen' => 1));
+                virtual($file_info->uri);
+                exit(0);
+            }
+        }
+        $this->log_dump(array('noscreen' => 1));
     }
 
+    /* *********************************************************************
+     *  VIEWER METHODS
+     *  The following methods are only used when a protected 
+     *  page is dynamically rendered
+     ********************************************************************** */
+    function init_viewer() {
+
+        ob_start(); 
+
+        $this->marker('Initializing viewer');
+        $ctx =& $this->context();
+        $ctx->template_dir
+            = SubRosa_Util::os_path( $this->config['phpdir'], 'tmpl' );
+        $ctx->stash('plugin_template_dir',  $this->template_dir);
+        $ctx->stash('mt_template_dir',      $ctx->template_dir);
+
+        // Set up Smarty defaults
+        $ctx->caching = $this->caching;
+        $ctx->debugging = $this->debugging;
+        if ($ctx->debugging) {
+            $ctx->compile_check   =  true;
+            $ctx->force_compile   =  true;
+            $ctx->debugging_ctrl = '';
+            $ctx->debug_tpl = SubRosa_Util::os_path($this->config['mtdir'],
+                                    '/php/extlib/smarty/libs/debug.tpl');
+        }
+
+        // Set up our customer error handler
+        set_error_handler(array(&$this, 'error_handler'));
+
+        $this->request = $this->fix_request_path($this->request);
+        if (preg_match('/\.(\w+)$/', $this->request, $matches)) {
+            $ctx->stash('request_extenstion', strtolower($matches[1]));
+        }
+
+        $this->log('REQUEST VARS: '
+                    . ($_REQUEST ? print_r($_REQUEST, true) : '(None)'));
+        $this->log('POST VARS: '
+                    . ($_POST ? print_r($_POST, true) : '(None)'));
+        $this->log('COOKIE VARS: '
+                    . ($_COOKIE ? print_r($_COOKIE, true) : '(None)'));
+        $this->log('SESSION VARS: '
+                    . ($_SESSION ? print_r($_SESSION, true) : '(None)'));
+    }
+
+    // Calls $ctx->add_plugin_dir for each directory found in:
+    //      - plugins/PluginName/php
+    //      - MT_HOME/php/plugins
+    // $ctx->add_plugin_dir simply appends the found dir to include_path
+    // and appends to the $this->plugins_dir array
+    // Then it calls load_plugin foreach dir in $ctx->plugins_dir array
+    //      - Evals 'modifier.' plugins with add_global_filter
+    //      - Evals 'init.' plugins via require
     function init_plugins() {
         $this->marker('Initializing MT plugins');
-        if (!$this->plugins_initialized) {
+        if ( !$this->plugins_initialized ) {
             parent::init_plugins();
             $this->init_subrosa_plugins();
             $this->plugins_initialized = 1;
@@ -174,9 +264,8 @@ class SubRosa extends MT
     //             functionality of but do not fit one of the above.
     //
     function init_subrosa_plugins() {
-        global $base_libdir;
         $plugin_dir = SubRosa_Util::os_path( 
-                          dirname($base_libdir), 'plugins'
+                          dirname($this->libdir), 'plugins'
                       );
         $this->marker("Initalizing subrosa plugins from $plugin_dir");
 
@@ -224,6 +313,12 @@ class SubRosa extends MT
 
     }
 
+
+
+
+
+
+
     function &init_auth($username=null, $password=null) {
         if ( $this->auth ) return $this->auth;
         $this->marker('Initializing authentication');
@@ -236,97 +331,10 @@ class SubRosa extends MT
         return $auth;
     }
 
-    function bootstrap( $entry_id=null ) {
-        $this->marker('Bootstrapping SubRosa');
-
-        //kill_php_current_session();
-        // show_current_request_info();
-
-        session_name('SubRosa');
-        session_start();
-        $this->init_viewer();
-        $this->init_plugins();
-
-        // $this->log_dump(array('noscreen' => 1));
-        $this->log_dump();
-
-        $policy_class = SUBROSA_POLICY;
-        $policy       = new $policy_class();
-        $this->policy =& $policy;
-        $req_check    = $policy->check_request( $entry_id );
-
-        // Testing direct access by Jay
-        if ( $req_check === true ) {
-        // if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
-        //     && ($req_check === true)) {
-            $file      = $_SERVER['REQUEST_URI'];
-            $file_info = apache_lookup_uri( $_SERVER['REQUEST_URI'] );
-            if (! preg_match('/\.(php|html)$/', $file_info->uri)) {
-                header('content-type: ' . $file_info->content_type);
-                $this->marker(print_r(array(
-                    'REQ_URI'      => $file,
-                    'file_info'    => $file_info,
-                    'content_type' => $file_info->content_type,
-                ), true));
-                $this->log_dump();
-                // $this->log_dump(array('noscreen' => 1));
-                virtual($file_info->uri);
-                exit(0);
-            }
-        }
-        $this->log_dump(array('noscreen' => 1));
-    }
-
-
-    /* *********************************************************************
-     *  VIEWER METHODS
-     *  The following methods are only used when a protected 
-     *  page is dynamically rendered
-     ********************************************************************** */
-    function init_viewer() {
-
-        ob_start(); 
-
-        $this->marker('Initializing viewer');
-        $ctx =& $this->context();
-        $ctx->template_dir
-            = SubRosa_Util::os_path( $this->config['phpdir'], 'tmpl' );
-        $ctx->stash('plugin_template_dir',  $this->template_dir);
-        $ctx->stash('mt_template_dir',      $ctx->template_dir);
-
-        // Set up Smarty defaults
-        $ctx->caching = $this->caching;
-        $ctx->debugging = $this->debugging;
-        if ($ctx->debugging) {
-            $ctx->compile_check   =  true;
-            $ctx->force_compile   =  true;
-            $ctx->debugging_ctrl = '';
-            $ctx->debug_tpl = SubRosa_Util::os_path($this->config['mtdir'],
-                                    '/php/extlib/smarty/libs/debug.tpl');
-        }
-
-        // Set up our customer error handler
-        set_error_handler(array(&$this, 'error_handler'));
-
-        $this->request = $this->fix_request_path($this->request);
-        if (preg_match('/\.(\w+)$/', $this->request, $matches)) {
-            $ctx->stash('request_extenstion', strtolower($matches[1]));
-        }
-
-        $this->log('REQUEST VARS: '
-                    . ($_REQUEST ? print_r($_REQUEST, true) : '(None)'));
-        $this->log('POST VARS: '
-                    . ($_POST ? print_r($_POST, true) : '(None)'));
-        $this->log('COOKIE VARS: '
-                    . ($_COOKIE ? print_r($_COOKIE, true) : '(None)'));
-        $this->log('SESSION VARS: '
-                    . ($_SESSION ? print_r($_SESSION, true) : '(None)'));
-    }
-
     /***
      * Mainline handler function.
      */
-    function view($blog_id=null)
+    function view( $blog_id = null )
     {
         $this->init_viewer();
         $this->marker('Starting viewer');
