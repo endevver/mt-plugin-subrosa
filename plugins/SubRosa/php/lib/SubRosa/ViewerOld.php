@@ -37,8 +37,8 @@ class SubRosa_Viewer {
     // abstract public function error_handler ( $errno, $errstr,
     //                                             $errfile, $errline );
 
-
-    if ( $_SERVER['SUBROSA_PASSTHRU'] == 1 ) {
+    if ( apache_getenv( 'SUBROSA_PASSTHRU' ) == 1) {
+        $mt->fullmarker( "SUBROSA_PASSTHRU found enabled");
 
         error_log($_SERVER['SCRIPT_URL'].': Inspect and passthrough');
         $mt = new SubRosa($cfg['mt_dir']."/mt-config.cgi", $_GET['blog_id']);

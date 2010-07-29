@@ -41,12 +41,34 @@ $cfg['subrosa_path']    = 'plugins/SubRosa/php/lib/SubRosa.php';
  */
 $cfg['log_output']      = 'subrosa_debug.log';
 
+// $cfg['session.cookie_domain'] = '<$mt:Var name="config.cookiedomain"$>';
+$cfg['session.cookie_domain'] = 'ccsa.local';
 
+$cfg['debugging'] = true;
 
+$cfg['mime_types'] = array(
+    /**
+     * The following are already defined. Uncomment to 
+     * override or add common ones to speed up lookups
+     */
+    // '__default__' => 'text/html',
+    // 'css' => 'text/css',
+    // 'txt' => 'text/plain',
+    // 'rdf' => 'text/xml',
+    // 'rss' => 'text/xml',
+    // 'xml' => 'text/xml',
+    'js' => 'text/javascript'
+);
 
+if ( apache_note('SUBROSA_PASSTHRU') ) {
+    echo 'apache_note SUBROSA_PASSTHRU set on request!!!';
+    die();
+}
 
-
-
+if ( apache_getenv('SUBROSA_PASSTHRU') ) {
+    echo 'apache_env SUBROSA_PASSTHRU set on request!!!';
+    die();
+}
 
 /************************************************************************
  *  DO NOT EDIT BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU'RE DOING    *
@@ -58,7 +80,8 @@ require_once(
 
 $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
 
-$mt->debugging = ( isset($_GET['debug']) === true );
+$mt->resolve_url('index.html');
+
 $mt->bootstrap();
 
 ?>

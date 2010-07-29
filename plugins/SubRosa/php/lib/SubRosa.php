@@ -7,16 +7,14 @@ ini_set('include_path', join( ':', array(   dirname( __FILE__ ),
                                             ini_get('include_path') )));
 
 require_once( 'SubRosa/Env/Debug.php' );
+$subrosa_debugenv = new SubRosa_Env_Debug();
+// require_once( 'SubRosa/Env.php' );
+// $subrosa_env = new SubRosa_Env();
 // require_once('log4php/Logger.php');
 require_once( 'SubRosa/Util.php' );
 require_once( 'SubRosa/Logger.php' );
 require_once(
     SubRosa_Util::os_path( $subrosa_config['mt_dir'], 'php', 'mt.php' ) );
-
-// Handle mt-preview URLs by not handling them
-if ( SubRosa_Util::url_is_entry_preview() ) {
-    $_GLOBAL['SUBROSA_PASSTHRU'] = true;
-}
 
 /**
 * MT-SubRosa
@@ -26,13 +24,17 @@ class SubRosa extends MT {
     const VERSION = '3.0';    // SubRosa version
 
     // Declare properties and set defaults
-    public $debugging           = false;
     public $logger              = NULL;
     public $log_delay           = true;
     public $log_queries         = false;
     public $plugins_initialized = false;
     public $user_cookie         = 'mt_user';
     public $user_session_key    = 'current_user';
+    public $session             = array();
+    public $suppress_mt_error   = E_DEPRECATED;
+    public $request_info        = array();
+    public $debugging           = false;
+    public $request;
     public $error_level;
     public $libdir;
     public $mt_dir;
@@ -45,10 +47,28 @@ class SubRosa extends MT {
 
     function __construct( $cfg_file = null, $blog_id = null ) {
 
-        // Assign values for object properties from config
+      /**
+       * Assign values for object properties from config 
+       */
         global $subrosa_config;
         foreach ( array_keys($subrosa_config) as $key ) {
-            $this->$key = $subrosa_config[$key];
+
+            // Matches namespaced keys like session.cookie_domain
+            if ( preg_match('/^([a-z]+)\.([a-z_]+)$/', $key, $matches )) {
+
+                // which becomes ${ $this->session }['cookie_domain']
+                // i.e. $this->session is an associative array
+                $property   =  $matches[1]; // The "session" in "session.foo"
+                $prop_hash  =& $this->$property; // Must be a reference!
+
+                // $matches[2] is the subproperty, i.e. "foo" in "session.foo"
+                // $matches[0] is the original config key, i.e. session.foo
+                $prop_hash[ $matches[2] ] =  $subrosa_config[ $matches[0] ];
+            }
+            // Matches normal config directives (e.g. error_log)
+            else {
+                $this->$key = $subrosa_config[$key];
+            }
         }
 
         // Initialize the logging system for debugging
@@ -57,13 +77,21 @@ class SubRosa extends MT {
         // Initialize the MT base class ( this also calls our init() method )
         $this->init_mt( $cfg_file, $blog_id );
 
-        // Set up our customer error handler
-        set_error_handler(array( &$this, 'error_handler' ));
+        // Post-merge of mime types to allow for override
+        $this->mime_types = array_merge( $this->mime_types, 
+                                         $subrosa_config['mime_types'] );
+
+        $this->init_session();
+        $this->init_response();
+
+        // Set up our customer error handler -- Moved to SubRosa old
+        // FIXME set_error_handler(array( &$this, 'error_handler' ));
     }
 
     function init_logger() {
         if ( isset($this->logger) ) return;
         $this->logger = new SubRosa_Logger( $this->log_output );
+        if ( isset($_REQUEST['debug']) ) $this->debugging = true;
         if ( $this->debugging ) @setcookie('SMARTY_DEBUG', true);
         $this->marker(
             sprintf('Initializing SubRosa for %s (Debug: %s)',
@@ -159,36 +187,139 @@ class SubRosa extends MT {
      */
     function bootstrap( $entry_id = null ) {
         $this->marker('Bootstrapping SubRosa');
-
-        //kill_php_current_session();
-        // show_current_request_info();
-
-        session_name('SubRosa');
-        session_start();
-
         $this->init_viewer();
         $this->init_plugins();
-        $this->log_dump();
-        // $this->log_dump(array('noscreen' => 1));
         $this->init_policy();
+        if ($this->response->redirect()) return $this->redirect_request();
+
+        // Handle mt-preview URLs by not handling them
+        if ( SubRosa_Util::url_is_entry_preview() ) {
+            $this->marker(  'Is MT preview: '. $_SERVER['REQUEST_URI'] );
+            $this->allow_request( $entry_id );
+        }
+        else {
+            $this->u_is_approved = $this->policy->check_request( $entry_id );
+        }
+        if ($this->response->redirect()) return $this->redirect_request();
 
         //// Testing direct access by Jay
         // if (   ($_SERVER['REMOTE_ADDR'] == '24.130.173.174')
         //     && ($req_check === true)) {
-        if ( $this->policy->check_request( $entry_id ) === true ) {
-            $this->handle_request( $entry_id );
+        if ( $this->u_is_approved ) {
+            $this->allow_request( $entry_id );
         }
-        apache_setenv('SUBROSA_EVALUATED',   1 );
-        apache_note(  'SUBROSA_EVALUATED',  '1');
-        $_SERVER['SUBROSA_EVALUATED']       = 1;
-        $_SESSION['SUBROSA_EVALUATED']      = 1;
+        else {
+            $this->deny_request( $entry_id );
+        }
+        $this->cleanup_viewer();
+        exit();
     }
 
+    function redirect_request() {
+        $this->u_is_approved = true;
+        $this->handle_response( true );
+        $this->cleanup_viewer();
+        exit();
+    }
+
+    function allow_request( $entry_id = null ) {
+        if (   ( $_SERVER['HTTP_HOST'] == 'ccsa.local' )
+            && ( isset($_GET['deny']) )) {
+            return $this->deny_request( $entry_id );
+        }
+        // $_SESSION['authorized_token'] = 1;
+        $this->u_is_approved = true;
+        apache_setenv('SUBROSA_PASSTHRU', 1 );
+        $this->fullmarker('SUBROSA_PASSTHRU enabled for authorized request: '
+                        . $_SERVER['REQUEST_URI'] );
+        $this->handle_response( true, $entry_id );
+    }
+
+    function deny_request( $entry_id = null ) {
+        if (   ( $_SERVER['HTTP_HOST'] == 'ccsa.local' )
+            && ( isset($_GET['allow']) )) {
+            return $this->allow_request( $entry_id );
+        }
+        $this->u_is_approved = false;
+        apache_setenv('SUBROSA_PASSTHRU', 0 );
+        $this->fullmarker('SUBROSA_PASSTHRU disabled for unauthorized request: '
+                        . $_SERVER['REQUEST_URI'] );
+        $this->handle_response( false, $entry_id );
+    }
+
+    function handle_response( $authorized, $entry_id = null ) {
+        $this->marker( sprintf( 'ACCESS REQUEST %s: <pre>%s</pre>', 
+                                ( $authorized ? 'ALLOWED' : 'DENIED' ),
+                                print_r($_SESSION, true)    ));
+        $response =& $this->response;
+
+        if ( ! $response->redirect() ) {
+            if ( $authorized ) {
+                $response->dispatch( $_SERVER['SCRIPT_NAME'] );
+            }
+            else {
+                print "YOU ARE NOT AUTHORIZED.";
+            }
+        }
+        $response->output();
+    }
+
+    function init_session() {
+        //kill_php_current_session();
+        // show_current_request_info();
+        session_name('SubRosa');
+        session_start();
+        if ( ! isset($_SESSION['initiated']) ) {
+            session_regenerate_id();    // Hampers session fixation
+            $_SESSION['initiated'] = true;
+        }
+        $ua      = $_SERVER['HTTP_USER_AGENT'];
+        $ua_sess = $_SESSION['HTTP_USER_AGENT'];
+        if ( isset($ua_sess) ) {
+            if ( $ua_sess != md5($ua) ) {
+                $_SESSION = array();
+                
+                // If it's desired to kill the session, also delete the 
+                // session cookie. Note: This will destroy the session, and 
+                // not just the session data!
+                if (ini_get("session.use_cookies")) {
+                    $params = session_get_cookie_params();
+                    setcookie(session_name(), '', time() - 42000,
+                        $params["path"], $params["domain"],
+                        $params["secure"], $params["httponly"]
+                    );
+                }
+
+                // Finally, destroy the session.
+                session_destroy();
+
+                $this->response->reload();
+                exit;
+            }
+        }
+        else {
+            $ua_sess = md5($ua);
+        }
+    }
+
+    function init_response() {
+        $this->marker('Initializing response');
+        if ( empty( $this->response ) ) {
+            require_once('SubRosa/Response.php');
+            $response             =  new SubRosa_Response();
+            $response->mime_types =& $this->mime_types;
+            $this->response       =& $response;
+        }
+        else {
+            trigger_error('SubRosa_Response object re-initialization.');
+        }
+        return $this->response;
+    }
+    
+    // FIXME - Most of this should be moved to our viewer
     function init_viewer() {
+        $this->marker('Initializing viewer'); 
 
-        ob_start();
-
-        $this->marker('Initializing viewer');
         $ctx =& $this->context();
         $ctx->template_dir
             = SubRosa_Util::os_path( $this->config['phpdir'], 'tmpl' );
@@ -206,20 +337,33 @@ class SubRosa extends MT {
                 $this->config['mtdir'], 'php', 'extlib', 'smarty', 
                                             'libs', 'debug.tpl' );
         }
-
-        $this->log('REQUEST VARS: '
-                    . ($_REQUEST ? print_r($_REQUEST, true) : '(None)'));
-        $this->log('POST VARS: '
-                    . ($_POST ? print_r($_POST, true) : '(None)'));
-        $this->log('COOKIE VARS: '
-                    . ($_COOKIE ? print_r($_COOKIE, true) : '(None)'));
-        $this->log('SESSION VARS: '
-                    . ($_SESSION ? print_r($_SESSION, true) : '(None)'));
+        // $this->marker(sprintf('<pre>%s</pre>',
+        //     print_r(
+        //         array(
+        //             'request' => $_REQUEST,
+        //             'post'    => $_POST,
+        //             'cookie'  => $_COOKIE,
+        //             'session' => $_SESSION
+        //         ),
+        //         true
+        //     )
+        // ));
 
         $this->request = $this->fix_request_path($this->request);
-        if (preg_match('/\.(\w+)$/', $this->request, $matches)) {
-            $ctx->stash('request_extension', strtolower($matches[1]));
-        }
+        $ctx->stash(
+            'request_extension', 
+            strtolower(pathinfo( $this->request, PATHINFO_EXTENSION ))
+        );
+        // Superceded by native functionality above
+        // if (preg_match('/\.(\w+)$/', $this->request, $matches)) {
+        //     $ctx->stash('request_extension', strtolower($matches[1]));
+        // }
+    }
+
+    // FIXME - This should be moved to our viewer
+    function cleanup_viewer() {
+        $this->marker('Cleaning up viewer');
+        $this->log_dump(array('noscreen' => 1));
     }
 
     // Calls $ctx->add_plugin_dir for each directory found in:
@@ -283,7 +427,6 @@ class SubRosa extends MT {
                     }
 
                     $this->log( "$type: $base");
-                    print "<h1>$plugin_dir/$file</h1>";
                     require_once("$plugin_dir/$file");
                 }
             }
@@ -295,35 +438,18 @@ class SubRosa extends MT {
         // Check that any requested policy was properly loaded.
         // The PHP constant SUBROSA_POLICY should be defined in
         // the policy plugin file and contains the PHP class name.
-        if ( defined( 'SUBROSA_POLICY' )) {
+        if ( defined( 'SUBROSA_POLICY' )) { // FIXME Maybe out of scope?
             $policy_class  =  SUBROSA_POLICY;
             $policy        =  new $policy_class();
             $this->policy  =& $policy;
+            $this->marker('Policy initialized: '
+                            .print_r($this->policy, true));
         }
-        elseif ( isset( $request_policy )) {
+        elseif ( isset( $request_policy )) { // FIXME Out of scope!
             die ( 'ERROR: The requested SubRosa policy, '
                 .  SUBROSA_POLICY
                 . ', could not be loaded');
         }
-    }
-
-    function handle_request() {
-        $file      = $_SERVER['REQUEST_URI'];
-        $file_info = apache_lookup_uri( $file );
-        # FIXME Hardcoded extensions
-        if ( ! preg_match( '/\.(php|html)$/', $file_info->uri )) { 
-            header('content-type: ' . $file_info->content_type);
-            $this->marker(print_r(array(
-                'REQ_URI'      => $file,
-                'file_info'    => $file_info,
-                'content_type' => $file_info->content_type,
-            ), true));
-            $this->log_dump();
-            // $this->log_dump(array('noscreen' => 1));
-            virtual( $file_info->uri );
-            exit( 0 );
-        }
-        $this->log_dump(array('noscreen' => 1));
     }
 
     function &init_auth( $username=null, $password=null ) {
@@ -339,6 +465,14 @@ class SubRosa extends MT {
     }
 
     function fix_request_path( $path='' ) {
+        $this->marker("In fix_request_path with "
+                     .print_r(array(
+                         'path'    => $path,
+                         'req_uri' => $_SERVER['REQUEST_URI'],
+                         'server'  => $_SERVER['SERVER_SOFTWARE'],
+                         'query'   => $_SERVER['QUERY_STRING']
+                      ), true)
+        );
 
         // Apache request
         if (!$path && $_SERVER['REQUEST_URI']) {
@@ -348,11 +482,13 @@ class SubRosa extends MT {
             // strip any duplicated slashes...
             $path = preg_replace('!/+!', '/', $path);
         }
+        $this->marker("Path manipulated: $path");
 
         // IIS request by error document...
         if (preg_match('/IIS/', $_SERVER['SERVER_SOFTWARE'])) {
             // assume 404 handler
-            if (preg_match('/^\d+;(.*)$/', $_SERVER['QUERY_STRING'], $matches)) {
+            if (preg_match( '/^\d+;(.*)$/', 
+                            $_SERVER['QUERY_STRING'], $matches)) {
                 $path = $matches[1];
                 $path = preg_replace('!^http://[^/]+!', '', $path);
                 if (preg_match('/\?(.+)?/', $path, $matches)) {
@@ -361,13 +497,15 @@ class SubRosa extends MT {
                 }
             }
         }
+        $this->marker("Path fixed: $path");
 
-        // When we are invoked as an ErrorDocument, the parameters are
-        // in the environment variables REDIRECT_*
-        if (isset($_SERVER['REDIRECT_QUERY_STRING'])) {
-            // TODO: populate $_GET and QUERY_STRING with REDIRECT_QUERY_STRING
-            $_SERVER['QUERY_STRING'] = getenv('REDIRECT_QUERY_STRING');
-        }
+        // We no longer use ErrorDocument
+        // // When we are invoked as an ErrorDocument, the parameters are
+        // // in the environment variables REDIRECT_*
+        // if (isset($_SERVER['REDIRECT_QUERY_STRING'])) {
+        //     // TODO: populate $_GET and QUERY_STRING with REDIRECT_QUERY_STRING
+        //     $_SERVER['QUERY_STRING'] = getenv('REDIRECT_QUERY_STRING');
+        // }
 
         return $path;
     }
@@ -405,164 +543,41 @@ class SubRosa extends MT {
         return $ctx;
     }
 
-// ERROR HANDLER function from PHP manual
-//    function error_handler($errno, $errstr, $errfile, $errline) {
-//      switch ($errno) {
-//        case E_USER_ERROR:
-//    echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
-//    echo "  Fatal error on line $errline in file $errfile";
-//    echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
-//    echo "Aborting...<br />\n";
-//    exit(1);
-//    break;
-//
-//  case E_USER_WARNING:
-//    echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
-//    break;
-//
-//  case E_USER_NOTICE:
-//    echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
-//    break;
-//
-//  default:
-//    echo "Unknown error type: [$errno] $errstr<br />\n";
-//    break;
-//  }
-//
-//  /* Don't execute PHP internal error handler */
-//  return true;
-//      }
-//
-//    return;
-//  }
-
-    function error_handler($errno, $errstr, $errfile, $errline) {
-
-        if ($errno & (E_ALL ^ E_NOTICE)) {
-            $mtphpdir = $this->config['PHPDir'];
-            $ctx =& $this->context();
-            $ctx->stash( 'blog_id', $this->blog_id );
-            $ctx->stash( 'blog',    $this->db->fetch_blog($this->blog_id));
-            $ctx->stash( 'error_message', $errstr."<!-- file: $errfile; line: $errline; code: $errno -->");
-            $ctx->stash( 'error_code', $errno );
-            $http_error = $this->http_error;
-            empty( $http_error ) and $http_error = 500;
-            $ctx->stash('http_error', $http_error);
-            $ctx->stash('error_file', $errfile);
-            $ctx->stash('error_line', $errline);
-            $ctx->template_dir = SubRosa_Util::os_path( $mtphpdir, 'tmpl' );
-            $ctx->caching = 0;
-            $ctx->stash('StaticWebPath',   $this->config['StaticWebPath']);
-            $ctx->stash('PublishCharset',  $this->config['PublishCharset']);
-            $charset = $this->config['PublishCharset'];
-            $out = $ctx->tag('Include', 
-                             array('identifier' => 'dynamic_error'));
-            if (isset($out)) {
-                header("Content-type: text/html; charset=".$charset);
-                echo $out;
-            } else {
-                header("HTTP/1.1 500 Server Error");
-                header("Content-type: text/plain");
-                echo "Error executing error template.";
-            }
-            if ($this->debugging) {
-                $log = $this->logger->current_log();
-                $error_console = "<div class=\"debug\" style=\"border:1px solid red; margin:0.5em; padding: 0 1em; text-align:left; background-color:#ddd; color:#000\"><pre>";
-                if ($log) $error_console .= implode("\n", $log);
-                $error_console .= "</pre></div>\n\n";
-                echo $error_console;
-            }
-            exit;
-        }
+    function &resolve_url($path) {
+        // FIXME NEED BLOG ID IN $this
+        $data =& parent::resolve_url( $path );
+        print '<h1>resolve_url results for '.$path.'</h1>';
+        var_dump($data);
+        $this->response->output();
+        $this->cleanup_viewer();
+        exit();
     }
 
-    function ickyerror_handler($errno, $errstr, $errfile, $errline) {
-        // $this->marker("[$errfile, $errline:] $errstr");
-        // RADAR: 12282
-        $this->log_dump();
-        parent::error_handler($errno, $errstr, $errfile, $errline);
-        return;
-        if ( ! ($errno & $this->error_level) ) return;
-
-        $charset = $this->config['PublishCharset'];
-        $mtphpdir = $this->config['PHPDir'];
-        $ctx =& $this->context();
-        $ctx->stash('blog_id', $this->blog_id);
-        $blog =& $this->blog();
-        // $ctx->stash('blog', $this->db->fetch_blog($this->blog_id));
-        $http_error = $this->http_error;
-        if (!$http_error) {
-            $http_error = $this->http_error = 500;
-        }
-
-        // If we have a custom error page,
-        // read it in and return it
-        $out = null;
-        if (isset($this->page['error'])) {
-            $this->log('Using custom error page: '. $this->page['error']);
-            ob_start();
-            require_once($this->page['error']);
-            $out = ob_get_contents();
-            ob_end_clean();
-        }
-
-        if (is_null($out)) {
-
-            // Use the default error page
-            $ctx->caching = 0;
-            $ctx->stash('blog_id', $this->blog_id);
-            $ctx->stash('blog', $this->db->fetch_blog($this->blog_id));
-            $ctx->stash('error_message', $errstr.
-                "<!-- file: $errfile; line: $errline; code: $errno -->");
-            $ctx->stash('error_code', $errno);
-            $ctx->stash('http_error', $http_error);
-            $ctx->stash('error_file', $errfile);
-            $ctx->stash('error_line', $errline);
-            $ctx->stash('StaticWebPath', $this->config['StaticWebPath']);
-            $ctx->stash('PublishCharset', $this->config['PublishCharset']);
-            $out = $ctx->tag('Include', array('type' => 'dynamic_error'));
-        }
-
-        if (isset($out)) {
-            header("Content-type: text/html; charset=".$charset);
-        } else {
-            header("HTTP/1.1 500 Server Error");
-            header("Content-type: text/plain");
-            $out = "Error executing error template.";
-        }
-        return $out;
-    }
-
-    function http_headers() {
-        $this->marker('Sending HTTP headers');
-        header("HTTP/1.1 200 OK");
-        // content-type header-- need to supplement with charset
-        $ctx =& $this->context();
-        $content_type = $ctx->stash('content_type');
-
-        if (!isset($content_type)) {
-            $content_type = $this->mime_types['__default__'];
-            $req_ext = $ctx->stash('request_extension');
-            if ($req_ext && (isset($this->mime_types[$req_ext]))) {
-                $content_type = $this->mime_types[$req_ext];
-            }
-        }
-        if (isset($config['PublishCharset'])) {
-            if (!preg_match('/charset=/', $content_type))
-                $content_type .= '; charset=' . $config['PublishCharset'];
-        }
-        header("Content-Type: $content_type");
-    }
+    // function &resolve_url($path) {
+    //     $data =& $this->db->resolve_url($path, $this->blog_id);
+    //     if ( isset($data)
+    //         && isset($data['fileinfo']['fileinfo_entry_id'])
+    //         && is_numeric($data['fileinfo']['fileinfo_entry_id'])
+    //     ) {
+    //         if (strtolower($data['templatemap']['templatemap_archive_type']) == 'page') {
+    //             $entry = $this->db->fetch_page($data['fileinfo']['fileinfo_entry_id']);
+    //         } else {
+    //             $entry = $this->db->fetch_entry($data['fileinfo']['fileinfo_entry_id']);
+    //         }
+    //         require_once('function.mtentrystatus.php');
+    //         if (!isset($entry) || $entry['entry_status'] != STATUS_RELEASE)
+    //             return;
+    //     }
+    //     return $data;
+    // }
 
     function set_cookie_defaults() {
-
         $this->marker();
-
         // Set cookie/session defaults in lieu of
         // specification in of directives in mt.config.cgi
         $this->session_timeout = $this->config['UserSessionTimeout'];
-        $this->cookie_path = $this->config['CookiePath'];
-        $this->cookie_domain = $this->config['CookieDomain'];
+        $this->cookie_path     = $this->config['CookiePath'];
+        $this->cookie_domain   = $this->config['CookieDomain'];
 
         /*
 
@@ -589,12 +604,15 @@ class SubRosa extends MT {
         $ctx->stash('script_url', $_SERVER['SCRIPT_URL']);
         // FIXME: Hardcoded is_bookmarklet parameter
         $ctx->stash('is_bookmarklet', 0);    // $app->param('is_bm')
-        $ctx->stash('help_url', 'http://www.sixapart.com/movabletype/docs/enterprise/1.5/');
+        $ctx->stash('help_url',
+            'http://www.sixapart.com/movabletype/docs/enterprise/1.5/');
         $ctx->stash('language_encoding', $this->config['PublishCharset']);
-
-        // FIXME: Hardcoded mt_url parameter
-        // Perl is: $tmpl->param(mt_url => $app->mt_uri);
-        $ctx->stash('mt_url', '/cgi/mt/mt.fcgi');
+        $ctx->stash('mt_url',   
+            SubRosa_Util::os_path(
+                $this->config['AdminCGIPath'],
+                $this->config['AdminScript']
+            )
+        );
         $ctx->stash('mt_product_name',
             encode_html(PRODUCT_NAME));
         $ctx->stash('mt_version',
@@ -632,16 +650,6 @@ class SubRosa extends MT {
 
     function no_errors() { return is_null($this->errstr); }
 
-    function redirect($url='') {
-        static $redirect_to = '';
-        if ($url) {
-            $this->log("Setting app redirect to $url");
-            $redirect_to = $url;
-        } else {
-            return $redirect_to;
-        }
-    }
-
     function errstr() { }
 
 
@@ -660,24 +668,16 @@ class SubRosa extends MT {
         $log->save();
     }
 
-    function log($msg='') {
-        $this->init_logger();
-        $this->logger->log($msg);
-    }
+    function log($msg='')    { $this->logger->log($msg);    }
 
-    function notify($msg='') {
-        $this->init_logger();
-        $this->logger->notify($msg);
-    }
+    function notify($msg='') { $this->logger->notify($msg); }
 
-    function marker($msg='') {
-        $this->init_logger();
-        $this->logger->marker($msg);
-    }
+    function marker($msg='') { $this->logger->marker($msg); }
+
+    function fullmarker($msg='') { $this->logger->fullmarker($msg); }
 
     function log_dump($opts='') {
-        if ($this->debugging !== true) return;
-        $this->init_logger();
+        if ($this->debugging != true) return;
         if ($this->log_queries and ! $opts['noqueries']) {
             print "<h1>Logging queries</h1>";
             $this->debug_queries();

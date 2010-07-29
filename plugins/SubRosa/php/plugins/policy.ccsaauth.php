@@ -35,6 +35,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @return  bool
      **/
     public function check_request( $entry_id=null ) {
+        global $mt;
+        if ( apache_getenv( 'SUBROSA_PASSTHRU' ) == 1 ) {
+            apache_setenv('SUBROSA_PASSTHRU', 0 );
+            $mt->fullmarker( 'SUBROSA_PASSTHRU disabled after '
+                           . 'allowing request past check_request: '
+                           . $_SERVER['REQUEST_URI'] );
+            // if ( $_SESSION['authorized_token'] ) {
+            //     unset( $_SESSION['authorized_token'] ); 
+            return true;
+        }
         return $this->is_authorized( $entry_id );
     } // end func check_request
 
@@ -58,6 +68,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Fetch details about the entry or entries in context, if any
         $this->entries =& $this->resolve_entry( $entry_id );
         $entries       =& $this->entries;
+        if ( $this->force_is_authorized ) return true;
 
         // Calculate access policies for $entries
         $e_access_type =  $this->access_type(); // See access_type() for info
@@ -73,8 +84,10 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // UNPROTECTED CONTENT
         // Return true if request target is not protected
         if ( $this->is_protected( $entries ) === false ) {
-            $mt->marker('AUTHORIZED: Request is for a public resource');
-            return true;
+            $mt->marker( 'AUTHORIZED: '
+                . ( $mt->requestlog['reason'] = 'Requested a public resource')
+            );
+            return ( $mt->requestlog['result'] = true );
         }
 
         // USER AUTHENTICATION
@@ -82,34 +95,42 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // The user must be authenticated to view protected content
         $user =& $this->resolve_user();
         if ( ! isset($user) ) {
-            $mt->marker(  'NOT AUTHORIZED: User must be authenticated');
+            $mt->marker( 'NOT AUTHORIZED: '
+                .( $mt->requestlog['reason'] = 'User must be authenticated')
+            );
             return $this->not_authorized();
         }
 
         // Retrieve the assoc array of CCSA-specific data
         $u_ccsa = $user->get('ccsa');
-        $mt->marker( 'Current user data: '.print_r($user) );
+        $mt->marker( 'Current user data: '.print_r($user, true) );
 
         // ACTIVE USER STATUS
         // Protected documents require an active status
         if ( $u_ccsa['is_active'] == false ) {
-            $mt->marker('NOT AUTHORIZED: User not active: '
-                        .$u_ccsa['status']);
+            $mt->marker('NOT AUTHORIZED: '
+                . ( $mt->requestlog['reason']
+                    = 'User not active: '.$u_ccsa['status'] )
+            );
             return $this->not_authorized();
         }
 
         // STAFF USERS
         // Return true if the user is Staff since they can see anything
         if ( $u_ccsa['is_staff'] == true ) {
-            $mt->marker('AUTHORIZED: User is staff');
-            return true;
+            $mt->marker( 'AUTHORIZED: '
+                . ( $mt->requestlog['reason'] = 'User is staff')
+            );
+            return ( $mt->requestlog['result'] = true );
         }
 
         // STAFF-ONLY DOCUMENTS
         // Since the user is not CCSA staff, deny access
         // if the document is designated as staff only
         if ( $e_flag['staff_only'] == true ) {
-            $mt->marker('NOT AUTHORIZED: Document is staff only');
+            $mt->marker('NOT AUTHORIZED: '
+                . ( $mt->requestlog['reason'] = 'Document is staff only' )
+            );
             return $this->not_authorized();
         }
 
@@ -117,12 +138,17 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // Deny access "Vendor" members access if the document's
         // access type is set to 'Members Only (no vendors)'
         if ( $u_ccsa['is_vendor'] && $e_flag['no_vendors'] ) {
-            $mt->marker('NOT AUTHORIZED: Document restricted to non-vendors');
+            $mt->marker('NOT AUTHORIZED: '
+                . ( $mt->requestlog['reason']
+                        = 'Document restricted to non-vendors' )
+            );
             return $this->not_authorized();
         }
 
         if ( ! $this->has_cprogram_access( $user, $entries ) ) {
-            $mt->marker('NOT AUTHORIZED: Not content group member');
+            $mt->marker('NOT AUTHORIZED: '
+                . ( $mt->requestlog['reason'] = 'Not content group member' )
+            );
             return $this->not_authorized();
         }
     } // end func is_authorized
@@ -203,6 +229,8 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         $levels    =& $this->access_level; // Shorter name
         $mt->marker('Access levels: '.print_r( $levels, true ));
 
+        $entries = array();
+
         // Populate array of $entries to evaluate
         // If $entry_id is provided, only check that entry
         if ( ! is_null( $entry_id )) {
@@ -213,7 +241,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         // returning the strictest policy found.  This becomes essentially
         // the access policy for the request.
         else {
-            $entries = $this->entries;
+            $entries = isset($this->entries) ? $this->entries : array();
         }
 
         // Iterate over and evaluate policies of $entries, if any.
@@ -257,13 +285,15 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function not_authorized() {
         global $mt;
-        $mt->marker('NOT AUTHORIZED!!');
         $user =& $mt->auth->user;  // Can be null if not auth'd'
+        $mt->requestlog['result'] = false;
         if ( $this->is_asset_request ) {
+            $mt->requestlog['is_asset_request'] = true;
+            $mt->requestlog['is_authenticated'] = isset($user);
             return isset($user) ? error_page() : login_page();
         }
         else {
-            return false;
+            return $mt->requestlog['result'];
         }
     } // end func not_authorized
 
@@ -275,15 +305,16 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      * @access  public
      **/
     public function login_page() {
+        global $mt;
+        $mt->fullmarker('RETURNING LOGIN PAGE');
         $url_data =& $this->url_data;
         // FIXME We're not populating $this->entry anymore
-        if ( isset($this->entry) &&  isset($url_data['fileinfo'])) {
-            header( 'Location: '
-                   .$url_data['fileinfo']['fileinfo_url']);
-            exit;
+        if ( isset($this->entry) && isset($url_data['fileinfo'])) {
+            $response =& $mt->response; 
+            return $response->redirect( $url_data['fileinfo']['fileinfo_url'] );
         }
         else {
-            print "Could not find entry or fileinfo:\n";
+            print "<h1>Could not find entry or fileinfo:</h1>\n";
             print_r($url_data);
             print_r($entry);
             die("Aborting request");
@@ -297,7 +328,11 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      *
      * @access  public
      **/
-    public function error_page() { $this->login_page(); }
+    public function error_page() {
+        global $mt;
+        $mt->fullmarker('RETURNING ERROR PAGE');
+        $this->login_page();
+    }
 
     /**
      * has_cprogram_access - Checks for/enforces content program restrictions
@@ -316,6 +351,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function has_cprogram_access( $user, $entries ) {
         global $mt;
+        $mt->requestlog['has_cprogram_access'] = true;  # DEFAULT
 
         // Gather a list of all content programs for the given entries
         $cprograms           = $this->cprograms_for_entry( $entries );
@@ -349,6 +385,7 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         }
 
         // User was not part of any of the discovered content porgrams
+        $mt->requestlog['has_cprogram_access'] = false;  # Override default
         return false;
     }
 
@@ -413,15 +450,13 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         if ( ! is_null( $entry_id ))
             $entry =& $mt->db->fetch_entry($entry_id);
 
-print '<pre>'.print_r($entry, true)."</pre>\n";
-
         // Try to resolve entry via fileinfo lookup of REQUEST_URI
         if ( ! isset($entry))
             $entry =& $this->resolve_entry_from_fileinfo();
 
         // Assume that current request is for an asset
         // Try to resolve the entry or entries from the asset association(s)
-        $skip = (isset($entry) || $this->force_response());
+        $skip = (isset($entry) || $this->force_is_authorized);
         if ( ! $skip ) {
             $entries =& $this->resolve_entries_from_asset();
             $this->is_asset_request = isset($entries);
@@ -453,20 +488,23 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
         // template, templatemap and fileinfo for any URL
         $url_data =& $mt->resolve_url( $this->request );
         if ( ! isset($url_data) ) return;
-
-        // If we get back fileinfo data, an entry is definitely in context
-        $mt->marker('URL data for entry: '.print_r($url_data, true));
-
         $this->url_data = $url_data;
 
+        // If we get back fileinfo data, an entry is likely to be in context
+        $mt->marker('URL data for entry: '.print_r($url_data, true));
+
         // Page-class entries are never protected
-        if ($url_data['fileinfo']['fileinfo_archive_type'] == 'Page') {
+        if ( $url_data['fileinfo']['fileinfo_archive_type'] == 'Page' ) {
+
+            $mt->requestlog['reason_specific'] = 'Entry object is a Page';
             return $this->force_response( array('authorized' => true ) );
         }
 
         // If this is not an entry archive return without an entry
         $template_type = $url_data['template']['template_type'];
         if ( isset($template_type) && ( $template_type != 'individual' )) {
+            $mt->requestlog['reason_specific']
+                = 'Has fileinfo record; template is not individual archive';
             return $this->force_response( array('authorized' => true ) );
         }
 
@@ -484,13 +522,30 @@ print '<pre>'.print_r($entry, true)."</pre>\n";
         // We should never get here.  If we do, we have a fileinfo record
         // that does not correspond to an existing entry.
         // Raise hell...
-        $mt->marker(  'Fileinfo returned but missing entry: '
-                    . print_r($url_data, true));
+        $mt->requestlog['reason_specific']
+            = 'Fileinfo returned with non-existent (orphaned) entry ID: '
+            . print_r($url_data, true);
+        trigger_error( $mt->requestlog['reason_specific'], E_USER_WARNING );
     } // end func resolve_entry_from_fileinfo
 
+
     private function force_response( $arr=null ) {
-        if ( is_null($arr) ) return $this->force_is_authorized;
-        $this->force_is_authorized = $arr['authorized'];
+        global $mt;
+        if ( isset($arr)) {
+            // Convert to an array if a scalar/boolean was passed as an arg
+            is_array($arr) or $arr = array( 'authorized' => $arr );
+
+            // Evaluate authorized hash key value for truthiness and
+            // assign boolean to $this->force_is_authorized.
+            $this->force_is_authorized = ( $arr['authorized'] == true );
+
+            // IF AUTHORIZED, also set the session token for 1-time passthru
+            // $arr['authorized'] and $_SESSION['authorized_token'] = 1;
+            $arr['authorized'] and apache_setenv('SUBROSA_PASSTHRU', 1 );
+            $mt->fullmarker('SUBROSA_PASSTHRU set to 1');
+        }
+        $mt->requestlog['forced_response'] = 1;
+        return ( $mt->requestlog['result'] = $this->force_is_authorized );
     }
 
     /**

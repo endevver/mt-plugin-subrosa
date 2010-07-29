@@ -13,13 +13,13 @@
 */
 class SubRosa_Logger
 {
-    var $log = array();
-    var $driver = '';
+    public $log = array();
+    public $driver = '';
 
     function __construct($output='')
     {
         // Log messages to file
-        if (strpos($output, '/') !== false) {
+        if ( strpos($output, '/') !== false ) {
             $this->driver = new SubRosa_Logger_File($output);
         }
         // Log messages to screen
@@ -32,18 +32,18 @@ class SubRosa_Logger
         }
     }
 
-    function notify($msg = null) {
+    function current_log() { return $this->driver->log; }
+
+    function log_dump() {
         global $mt;
-        if (    is_null($mt->notify_user)
-            ||  is_null($mt->notify_pass)) {
-            return;
+        if ( ! $mt->debugging ) return;
+        if ( count( $this->driver->log )) {
+            $this->driver->log_dump();
+            unset($this->driver->log);
         }
-        require_once('extlib/twitter.php');
-        $twitter = new Twitter($mt->notify_user, $mt->notify_pass);
-        $twitter->send_update($msg);
     }
 
-    function log($msg = null) {
+    function log( $msg = null ) {
         if (is_array($msg) || is_object($msg)) {
             $msg = print_r($msg, true);
         }
@@ -56,17 +56,12 @@ class SubRosa_Logger
         }
     }
 
-    function current_log() { return $this->driver->log; }
-    function log_dump() {
-        global $mt;
-        if ($mt->debugging !== true) return;
-        if (count($this->driver->log) == 0)  return;
-        $this->driver->log_dump();
-        unset($this->driver->log);
-    }
+    function debug($msg)  { $this->log($msg); }
 
-    function debug($msg) {  $this->log($msg); }
     function screen($msg) { $this->log($msg); }
+
+    function console($msg) { $this->log($msg); }
+
     function marker($msg = 'EOM') {
         $bt = debug_backtrace();
 
@@ -81,6 +76,7 @@ class SubRosa_Logger
         // build & return the message
         $this->log("[[$class::$function, $line]]: $msg");
     }
+
     function fullmarker($msg) {
         $bt = debug_backtrace();
 
@@ -96,9 +92,6 @@ class SubRosa_Logger
         $this->log("$class::$function: $msg in $file at $line");
     }
 
-
-    function console($msg) { $this->log($msg); }
-
     //     $log = $this->console_log;
     //     if (file_exists($log) ) {
     //         error_log("$msg\n", 3, $log);
@@ -112,6 +105,18 @@ class SubRosa_Logger
     //     }
     //     error_log("$msg\n", 0);
     // }
+
+    function notify($msg = null) {
+        global $mt;
+        if (    is_null($mt->notify_user)
+            ||  is_null($mt->notify_pass)) {
+            return;
+        }
+        require_once('extlib/twitter.php');
+        $twitter = new Twitter($mt->notify_user, $mt->notify_pass);
+        $twitter->send_update($msg);
+    }
+
 
 }
 
@@ -145,7 +150,7 @@ class SubRosa_Logger_Screen extends SubRosa_Logger
     }
 
     function log_dump($opts='') {
-        if ($_SERVER['REMOTE_ADDR'] and empty($opts['noscreen'])) {
+        if ( $_SERVER['REMOTE_ADDR'] and empty($opts['noscreen']) ) {
             // web view...
             echo "<div class=\"debug\" style=\"border:1px solid red; margin:0.5em; padding: 0 1em; text-align:left; background-color:#ddd; color:#000\"><pre>";
             echo implode("\n", $this->log);
@@ -167,7 +172,7 @@ class SubRosa_Logger_Screen extends SubRosa_Logger
 class SubRosa_Logger_File extends SubRosa_Logger
 {
 
-    var $handle = NULL;
+    var $handle;
     var $file;
 
     function __construct($file) {
@@ -183,7 +188,7 @@ class SubRosa_Logger_File extends SubRosa_Logger
             $handle = fopen($this->file, "a");
             if ($handle) {
                 global $mt;
-                if ($mt->log_delay === true) {
+                if ( $mt->log_delay ) {
                     $separator = str_repeat("\n",5)
                                . str_repeat((str_repeat("=", 80)."\n"),10);
                     array_unshift($this->log, $separator);
@@ -200,7 +205,5 @@ class SubRosa_Logger_File extends SubRosa_Logger
         $screen->log_dump();
     }
 }
-
-
 
 ?>

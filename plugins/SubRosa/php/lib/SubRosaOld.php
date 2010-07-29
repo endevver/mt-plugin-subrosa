@@ -127,6 +127,189 @@ exit;
         restore_error_handler();
     }
 
+    function TEMP_error_handler($errno, $errstr, $errfile, $errline) {
+
+        $out = $ctx->tag('Include', 
+                         array('identifier' => 'dynamic_error'));
+
+        if ($this->debugging) {
+            $log = $this->logger->current_log();
+            $error_console = "<div class=\"debug\" style=\"border:1px solid red; margin:0.5em; padding: 0 1em; text-align:left; background-color:#ddd; color:#000\"><pre>";
+            if ($log) $error_console .= implode("\n", $log);
+            $error_console .= "</pre></div>\n\n";
+            echo $error_console;
+        }
+        exit;
+    }
+
+    function ickyerror_handler($errno, $errstr, $errfile, $errline) {
+        // $this->marker("[$errfile, $errline:] $errstr");
+        // RADAR: 12282
+        $this->log_dump();
+        parent::error_handler($errno, $errstr, $errfile, $errline);
+        return;
+        if ( ! ($errno & $this->error_level) ) return;
+
+        $charset = $this->config['PublishCharset'];
+        $mtphpdir = $this->config['PHPDir'];
+        $ctx =& $this->context();
+        $ctx->stash('blog_id', $this->blog_id);
+        $blog =& $this->blog();
+        // $ctx->stash('blog', $this->db->fetch_blog($this->blog_id));
+        $http_error = $this->http_error;
+        if (!$http_error) {
+            $http_error = $this->http_error = 500;
+        }
+
+        // If we have a custom error page,
+        // read it in and return it
+        $out = $this->error_page();
+
+        if ( is_null( $out )) {
+
+            // Use the default error page
+            $ctx->caching = 0;
+            $ctx->stash('blog_id', $this->blog_id);
+            $ctx->stash('blog', $this->db->fetch_blog($this->blog_id));
+            $ctx->stash('error_message', $errstr.
+                "<!-- file: $errfile; line: $errline; code: $errno -->");
+            $ctx->stash('error_code', $errno);
+            $ctx->stash('http_error', $http_error);
+            $ctx->stash('error_file', $errfile);
+            $ctx->stash('error_line', $errline);
+            $ctx->stash('StaticWebPath', $this->config['StaticWebPath']);
+            $ctx->stash('PublishCharset', $this->config['PublishCharset']);
+            $out = $ctx->tag('Include', array('type' => 'dynamic_error'));
+        }
+
+        if (isset($out)) {
+            header("Content-type: text/html; charset=".$charset);
+        } else {
+            header("HTTP/1.1 500 Server Error");
+            header("Content-type: text/plain");
+            $out = "Error executing error template.";
+        }
+        return $out;
+    }
+
+    // FIXME Reconcile with SubRosa_Response::error_page()
+    function error_page() {
+        $out = null;
+        if (isset($this->page['error'])) {
+            $this->log('Using custom error page: '. $this->page['error']);
+            ob_start();
+            require_once( $this->page['error'] );
+            $out = ob_get_contents();
+            ob_end_clean();
+        }
+        return $out;
+    }
+
+    function error_handler($errno, $errstr, $errfile, $errline) {
+
+        // First, check to see whether we're suppressing the display of the 
+        // error locally since MT throws way too many warnings.
+        // Immediately return true for suppressed MT errors making it a no-op
+        if ($this->error_is_suppressed( $errno, $errstr, $errfile, $errline)){
+            return true;
+        }
+
+        $this->logger->fullmarker('SUBROSA ERROR HANDLER ENCOUNTERED: '
+            .print_r(array(
+                'errno'   => $errno, 
+                'errstr'  => $errstr, 
+                'errfile' => $errfile, 
+                'errline' => $errline
+            ), true)
+        );
+
+        if ( ! ($errno & $this->error_level )) return;
+
+        switch ($errno) {
+            case E_USER_ERROR:
+                echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
+                echo "  Fatal error on line $errline in file $errfile";
+                echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+                echo "Aborting...<br />\n";
+                // exit(1);
+                break;
+
+            case E_USER_WARNING:
+                echo "<b>My WARNING</b> [$errno] $errstr in $errfile line $errline<br />\n";
+                break;
+
+            case E_USER_NOTICE:
+                echo "<b>My USER NOTICE</b> [$errno] $errstr in $errfile line $errline<br />\n";
+                break;
+
+            case E_NOTICE:
+                echo "<b>PHP NOTICE</b> [$errno] $errstr in $errfile line $errline<br />\n";
+                break;
+
+            // case E_NOTICE:
+            //     // SubRosa_Util::os_path( 
+            //     //     $subrosa_config['mt_dir'], 'php', 'lib' )
+            //     if (strpos( $errfile, $this->config('PHPLibDir') === false )){
+            //         echo "<b>My E_NOTICE</b> [$errno] $errstr in $errfile line $errline<br />\n";
+            //     }
+            //     break;
+
+            default:
+                ob_start();
+                var_dump( func_get_args() );
+                $this->marker( ob_get_contents() );
+                ob_end_clean();
+                $this->log_dump();
+                return true;
+                parent::error_handler( $errno, $errstr, $errfile, $errline );
+                // echo "Unknown error type: [$errno] $errstr in $errfile line $errline<br />\n";
+                break;
+        }
+
+        /* Don't execute PHP internal error handler */
+        return true;
+    }
+
+ //    return;
+ // }
+
+    function error_is_suppressed($errno, $errstr, $errfile, $errline) {
+        // Check to see if 
+
+        // Check to see whether the file with the error is in the MT PHP dir
+        $mtphpdir = $this->config( 'PHPDir' );
+        $is_mt    = ( strpos( $errfile, $mtphpdir ) === 0 );            
+
+        // NOT an MT_HOME/php script
+        if ( ! $is_mt ) {
+            // Check to see whether it's in one of the MT addons packs
+            $addons   = Subrosa_Util::os_path( $this->mt_dir, 'addons' );
+            $packs    = array('Commercial', 'Community', 'Enterprise');
+            foreach ( $packs as $pack ) {
+                $packlib = Subrosa_Util::os_path( $addons, $pack.'.pack' );
+                if ( strpos( $errfile, $packlib ) === 0 ) $is_mt = 1;
+            }
+        }
+
+        if ( $is_mt ) {
+            // Check config to see if this MT error level should be suppressed
+            if ( $errno & $this->suppress_mt_error ) {
+                return true;
+            }
+
+            // Annoying warnings, frequently and purposefully coded
+            foreach (array('property', 'index') as $key) {
+                if ( strpos( $errstr , "Undefined $key" ) === 0 ) {
+                    return true;
+                }
+            }
+        }
+
+        // Not supressed
+        return false;
+    }
+
+
     function compile_blog_page($data) {
         $this->marker('Compiling blog page');
 
