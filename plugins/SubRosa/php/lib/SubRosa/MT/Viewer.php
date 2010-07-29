@@ -7,6 +7,7 @@
 
 include_once("Smarty.class.php");
 require_once('MTViewer.php');
+
 class SubRosa_MT_Viewer extends MTViewer {
 
     // We override this function in MTViewer in oredr to properly handle

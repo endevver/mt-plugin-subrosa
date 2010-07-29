@@ -2,10 +2,10 @@
 /**
 *  SubRosa_Util class utilties
 */
-class SubRosa_Util
-{
+class SubRosa_Util {
 
-    public static function url_is_entry_preview($u = $_SERVER['REQUEST_URI']){
+    public static function url_is_entry_preview($u = null){
+        isset($u) or $u = $_SERVER['REQUEST_URI'];
         // /2010/06/mt-preview-d1c087f22262e5264c6b57e21ae1c84eded.html?083153
         $preview_regex    = '/\/mt-preview-[A-Za-z0-9]+\.html\?[0-9]+/';
         return preg_match( $preview_regex, $u );

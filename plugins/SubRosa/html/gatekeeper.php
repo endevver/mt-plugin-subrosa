@@ -42,6 +42,12 @@ $cfg['subrosa_path']    = 'plugins/SubRosa/php/lib/SubRosa.php';
 $cfg['log_output']      = 'subrosa_debug.log';
 
 
+
+
+
+
+
+
 /************************************************************************
  *  DO NOT EDIT BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU'RE DOING    *
  ************************************************************************/
@@ -49,8 +55,10 @@ $subrosa_config = $cfg;
 
 require_once(
     $cfg['mt_dir'] . DIRECTORY_SEPARATOR . $cfg['subrosa_path'] );
+
 $mt = new SubRosa( null, $_SERVER['SUBROSA_BLOG_ID'] );
-if (isset($_GET['debug'])) $mt->debugging = true;
+
+$mt->debugging = ( isset($_GET['debug']) === true );
 $mt->bootstrap();
 
 ?>

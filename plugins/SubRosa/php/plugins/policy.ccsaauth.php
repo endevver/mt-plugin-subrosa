@@ -7,11 +7,6 @@ require_once( 'SubRosa/PolicyAbstract.php' );
 */
 class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
 
-    var $request;
-    var $is_asset_request = 0;
-    var $url_data;
-    var $entry;
-    var $entries = array();    
     var $access_level = array(
         // FIXME CCSA Staff value does not exist!
         'CCSA Staff'                => 3, 
@@ -19,6 +14,11 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
         'Members Only'              => 1,
         'Public'                    => 0,
     );
+    var $is_asset_request = 0;
+    var $entries = array();    
+    var $request;
+    var $url_data;
+    var $entry;
     var $force_is_authorized;
     var $request_access_type;
 
@@ -406,14 +406,17 @@ class Policy_CCSAAuth extends SubRosa_PolicyAbstract {
      **/
     public function &resolve_entry( $entry_id=null ) {
         global $mt;
-        $mt->marker('Resolving entry with ID: '.$entry_id);
+        $mt->marker(isset($entry_id) ? 'Resolving entry with ID: '.$entry_id
+                                     : 'Resolving entries with no entry ID');
 
         // Load entry from DB with $entry_id if given
         if ( ! is_null( $entry_id ))
             $entry =& $mt->db->fetch_entry($entry_id);
 
+print '<pre>'.print_r($entry, true)."</pre>\n";
+
         // Try to resolve entry via fileinfo lookup of REQUEST_URI
-        if ( !isset($entry) )
+        if ( ! isset($entry))
             $entry =& $this->resolve_entry_from_fileinfo();
 
         // Assume that current request is for an asset
