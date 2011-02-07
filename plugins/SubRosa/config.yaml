@@ -1,13 +1,12 @@
----
-id: 'subrosa'
-key: 'SubRosa'
-name: 'SubRosa'
-description: 'Authenticated reading of published blogs.'
-author_name: 'Jay Allen'
-author_link: 'http://endevver.com/'
-plugin_link: 'http://endevver.com/plugin'
-doc_link: 'http://endevver.com/plugin/docs'
-version: 2.0
+name:           SubRosa
+id:             subrosa
+key:            SubRosa
+description:    Authenticated reading of published blogs.
+author_name:    "Jay Allen, Endevver LLC"
+author_link:    http://endevver.com/'
+plugin_link:    https://github.com/endevver/mt-plugin-subrosa'
+# doc_link:       http://endevver.com/plugin/docs
+version:        2.1
 tags:
   help_url: http://www.movabletype.org/documentation/appendices/tags/%t.html
   function:
