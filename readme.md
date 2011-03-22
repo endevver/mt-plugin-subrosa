@@ -72,9 +72,28 @@ The variable `$is_authenticated` returns true if a user is logged in; otherwise 
         <?php } ?>
     </mt:if>
 
+### Example: "Page Content (Not Logged In)" Template Module
+
+In the above example, a Template Module named "Page Content (Not Logged In)" is used. This module might contain an explanation of why the user can't see the content as well as links to register or log in.
+
+    <div class="not-authenticated">
+        <h2>Not Logged In</h2>
+        <p>To view this page you are required to be logged in.</p>
+        <p>
+            <a href="javascript:void(0);" onclick="window.location.href='<mt:CGIPath><mt:CommunityScript>?__mode=login&amp;blog_id=<mt:BlogID>&amp;return_to='+encodeURIComponent(location.href);">Log in</a> 
+            or <a href="javascript:void(0);" onclick="window.location.href='<mt:CGIPath><mt:CommunityScript>?__mode=register&amp;blog_id=<mt:BlogID>&amp;return_to='+encodeURIComponent(location.href);">sign up</a>.
+        </p>
+    </div>
+
+Alternatively, this template module could automatically redirect to the login page with the [SignInLink](http://www.movabletype.org/documentation/appendices/tags/signinlink.html) template tag, for example:
+
+    <?php header("Location: <mt:SignInLink>"); ?>
+
 ## Creating a Privacy Policy
 
 You'll need to create a privacy policy to manage which users can view which content. The policy file should be stored in `[MT_HOME]/plugins/SubRosa/php/plugins/`, and should follow the naming convention of `policy.[name].php`.
+
+An example policy is included: `policy.loggedin.php`, found in `pluginsSubRosa/php/plugins/`. This policy is commented to help you understand better how a custom SubRosa policy might work. As noted above, this policy also shows the use of a login redirect.
 
 ## Include `gatekeeper.php`
 
@@ -121,6 +140,10 @@ The server's PHP configuration may need to be updated to work with SubRosa.
 * Published files must be made parseable by PHP
 * `safe_mode` should be off
 * `open_basedir` should reference the current directory or a parent
+* PHP should be compiled with support for your database type.
+
+Use `<?php phpinfo(); ?>` to easily inspect all of the above.
+
 
 # About Endevver
 
