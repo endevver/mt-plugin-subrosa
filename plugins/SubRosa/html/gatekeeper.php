@@ -83,6 +83,14 @@ function init_subrosa_config() {
 
     if ( ! isset( $cfg['subrosa_path'] ))
         $cfg['subrosa_path'] = 'plugins/SubRosa/php/lib/SubRosa.php';
+        
+    // Do a quick check to see that the required Environment Variables have
+    // been set. This should make misconfiguration more obvious.
+    if ( ! isset( $_SERVER['SUBROSA_BLOG_ID'] ) )
+        print "The environment variable 'SUBROSA_BLOG_ID' appears to not be set; this variable is required for SubRosa.";
+    
+    if ( ! isset( $_SERVER['SUBROSA_POLICY'] ) )
+        print "The environment variable 'SUBROSA_POLICY' appears to not be set; this variable is required for SubRosa.";
 
     # Append mt_dir to subrosa_path to create an absolute filepath
     $cfg['subrosa_path'] = $cfg['mt_dir']
